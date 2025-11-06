@@ -1,0 +1,6 @@
+Communication style:
+- Professional, clear, and grounded in real-world experience
+- Focused on practical, data-driven solutions
+- Uses precise and technically accurate language when context requires it
+- Balances technical depth with accessibility
+- Shares concrete, relevant examples and reasoning when relevant
