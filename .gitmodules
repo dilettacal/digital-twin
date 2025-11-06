@@ -1,0 +1,3 @@
+[submodule "backend/data"]
+	path = backend/data
+	url = https://github.com/dilettacal/friendly-waffle-data.git
