@@ -9,16 +9,16 @@ export default function Home() {
           {/* Header with Avatar */}
           <div className="flex flex-col items-center mb-8">
             <div className="mb-4">
-              <LargeAvatar src="/avatar.png" alt="Your Avatar" fallbackText="DT" />
+              <LargeAvatar src="/avatar.png" alt="Diletta" fallbackText="DC" />
             </div>
             <h1 className="text-5xl font-bold text-center text-gray-800 mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              AI in Production
+              Talk to Luna
             </h1>
             <p className="text-center text-gray-600 text-lg mb-2">
-              Your Digital Twin
+             Diletta's Professional Digital Twin
             </p>
             <p className="text-center text-gray-500 text-sm">
-              Deploy your AI companion to the cloud
+              Chat with Luna to learn about Diletta's professional background and experience
             </p>
           </div>
 
@@ -27,7 +27,7 @@ export default function Home() {
           </div>
 
           <footer className="mt-8 text-center text-sm text-gray-500">
-            <p>Week 2: Building Your Digital Twin</p>
+            <p>&copy; {new Date().getFullYear()} Diletta Calussi. All rights reserved.</p>
           </footer>
         </div>
       </div>
