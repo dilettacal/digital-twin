@@ -1,9 +1,10 @@
 name: Deploy Digital Twin
 
 on:
-  push:
-    branches:
-      - main
+  # Disabled during development - uncomment to re-enable automatic deployment on push
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
     inputs:
       environment:
