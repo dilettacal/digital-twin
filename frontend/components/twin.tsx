@@ -16,7 +16,6 @@ export default function Twin() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState<string>('');
-    const [apiUrl, setApiUrl] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -104,7 +103,7 @@ export default function Twin() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
+        <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-200">
             {/* Header */}
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-5 rounded-t-xl">
                 <div className="flex items-center gap-3">
@@ -126,16 +125,17 @@ export default function Twin() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 transition-colors duration-200">
                 {messages.length === 0 && (
-                    <div className="text-center text-gray-500 mt-12">
-                        <div className="relative inline-block mb-4">
-                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mx-auto shadow-lg">
-                                <Bot className="w-10 h-10 text-white" />
+                    <div className="text-center text-gray-500 dark:text-gray-400 mt-16">
+                        <div className="relative inline-block mb-6">
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 dark:from-indigo-500 dark:to-purple-600 flex items-center justify-center mx-auto shadow-xl ring-4 ring-indigo-100 dark:ring-indigo-900/30">
+                                <Bot className="w-12 h-12 text-white" />
                             </div>
                         </div>
-                        <p className="text-lg font-medium text-gray-700">Hello! I&apos;m Luna, Diletta&apos;s Professional Digital Twin.</p>
-                        <p className="text-sm mt-2 text-gray-500">Ask me about Diletta&apos;s work, experience, skills, and professional background.</p>
+                        <p className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Hello! I&apos;m Luna</p>
+                        <p className="text-base text-gray-600 dark:text-gray-300 mb-4">Diletta&apos;s Professional Digital Twin</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Ask me about Diletta&apos;s work, experience, skills, and professional background.</p>
                     </div>
                 )}
 
@@ -157,14 +157,14 @@ export default function Twin() {
                         <div
                             className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${
                                 message.role === 'user'
-                                    ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-tr-sm'
-                                    : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
+                                    ? 'bg-gradient-to-br from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-600 text-white rounded-tr-sm'
+                                    : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 rounded-tl-sm shadow-sm'
                             }`}
                         >
                             <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
                             <p
                                 className={`text-xs mt-2 ${
-                                    message.role === 'user' ? 'text-white/70' : 'text-gray-400'
+                                    message.role === 'user' ? 'text-white/70' : 'text-gray-400 dark:text-gray-400'
                                 }`}
                             >
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -191,7 +191,7 @@ export default function Twin() {
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                         </div>
-                        <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                        <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                             <div className="flex space-x-1.5">
                                 <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                 <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -205,7 +205,7 @@ export default function Twin() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 transition-colors duration-200">
                 <div className="flex gap-2">
                     <input
                         type="text"
@@ -213,7 +213,7 @@ export default function Twin() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyPress}
                         placeholder="Type your message..."
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800 placeholder-gray-400 transition-all"
+                        className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
                         disabled={isLoading}
                     />
                     <button

@@ -81,27 +81,27 @@ export function LargeAvatar({ src, alt, showBadge = true, fallbackText = 'DT' }:
 
   return (
     <div className="relative">
-      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1 shadow-xl">
-        <div className="w-full h-full rounded-full bg-white p-1">
+      <div className="w-36 h-36 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1.5 shadow-2xl ring-4 ring-white/50 dark:ring-gray-800/50">
+        <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 p-1">
           {!imageError ? (
             <Image
               src={src}
               alt={alt}
-              width={120}
-              height={120}
+              width={140}
+              height={140}
               className="w-full h-full rounded-full object-cover"
               priority
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
               {fallbackText}
             </div>
           )}
         </div>
       </div>
       {showBadge && (
-        <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+        <div className="absolute bottom-1 right-1 w-10 h-10 bg-green-500 rounded-full border-4 border-white dark:border-gray-900 shadow-xl flex items-center justify-center ring-2 ring-green-400/50">
           <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
         </div>
       )}
