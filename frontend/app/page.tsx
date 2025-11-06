@@ -1,16 +1,26 @@
 import Twin from '@/components/twin';
+import { LargeAvatar } from '@/components/avatar';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
-            AI in Production
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Deploy your Digital Twin to the cloud
-          </p>
+          {/* Header with Avatar */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="mb-4">
+              <LargeAvatar src="/avatar.png" alt="Your Avatar" fallbackText="DT" />
+            </div>
+            <h1 className="text-5xl font-bold text-center text-gray-800 mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              AI in Production
+            </h1>
+            <p className="text-center text-gray-600 text-lg mb-2">
+              Your Digital Twin
+            </p>
+            <p className="text-center text-gray-500 text-sm">
+              Deploy your AI companion to the cloud
+            </p>
+          </div>
 
           <div className="h-[600px]">
             <Twin />
