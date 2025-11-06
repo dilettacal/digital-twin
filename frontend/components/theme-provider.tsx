@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -14,41 +14,37 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
 
-  const applyTheme = useCallback((newTheme: Theme) => {
-    if (typeof window === 'undefined') return;
-    
-    const root = document.documentElement;
-    if (newTheme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, []);
-
-  // Initialize and apply theme on mount
+  // Initialize theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     const initialTheme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'light';
     
+    // Apply the theme to the document
+    if (initialTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
     setTheme(initialTheme);
-    applyTheme(initialTheme);
-  }, [applyTheme]);
+  }, []);
 
-  // Apply theme when it changes
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((currentTheme) => {
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      applyTheme(newTheme);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('theme', newTheme);
-      }
-      return newTheme;
-    });
-  }, [applyTheme]);
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    
+    // Update document
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme);
+    
+    // Update state
+    setTheme(newTheme);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
