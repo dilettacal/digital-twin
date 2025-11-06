@@ -105,15 +105,15 @@ export default function Twin() {
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-200">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-5 rounded-t-xl">
+            <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 text-white p-5 rounded-t-xl">
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm p-0.5">
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                                <Bot className="w-6 h-6 text-white" />
+                            <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-inner">
+                                <Bot className="w-7 h-7 text-teal-600 dark:text-emerald-400" />
                             </div>
                         </div>
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white"></div>
+                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white"></div>
                     </div>
                     <div>
                         <h2 className="text-xl font-bold flex items-center gap-2">
@@ -129,8 +129,8 @@ export default function Twin() {
                 {messages.length === 0 && (
                     <div className="text-center text-gray-500 dark:text-gray-400 mt-16">
                         <div className="relative inline-block mb-6">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 dark:from-indigo-500 dark:to-purple-600 flex items-center justify-center mx-auto shadow-xl ring-4 ring-indigo-100 dark:ring-indigo-900/30">
-                                <Bot className="w-12 h-12 text-white" />
+                            <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center mx-auto shadow-xl ring-4 ring-teal-400 dark:ring-emerald-500">
+                                <Bot className="w-12 h-12 text-teal-600 dark:text-emerald-400" />
                             </div>
                         </div>
                         <p className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Hello! I&apos;m Luna</p>
@@ -148,8 +148,8 @@ export default function Twin() {
                     >
                         {message.role === 'assistant' && (
                             <div className="flex-shrink-0 mb-1">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md ring-2 ring-white">
-                                    <Bot className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-md ring-2 ring-teal-500 dark:ring-emerald-500">
+                                    <Bot className="w-5 h-5 text-teal-600 dark:text-emerald-400" />
                                 </div>
                             </div>
                         )}
@@ -157,7 +157,7 @@ export default function Twin() {
                         <div
                             className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${
                                 message.role === 'user'
-                                    ? 'bg-gradient-to-br from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-600 text-white rounded-tr-sm'
+                                    ? 'bg-gradient-to-br from-teal-600 to-emerald-600 dark:from-teal-500 dark:to-emerald-600 text-white rounded-tr-sm'
                                     : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100 rounded-tl-sm shadow-sm'
                             }`}
                         >
@@ -187,15 +187,15 @@ export default function Twin() {
                 {isLoading && (
                     <div className="flex gap-3 justify-start items-end">
                         <div className="flex-shrink-0 mb-1">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md ring-2 ring-white">
-                                <Bot className="w-5 h-5 text-white" />
+                            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-md ring-2 ring-teal-500 dark:ring-emerald-500">
+                                <Bot className="w-5 h-5 text-teal-600 dark:text-emerald-400" />
                             </div>
                         </div>
                         <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                             <div className="flex space-x-1.5">
-                                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                         </div>
                     </div>

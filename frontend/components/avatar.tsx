@@ -37,7 +37,7 @@ export function Avatar({
   return (
     <div className={`relative ${className}`}>
       <div 
-        className={`rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 ring-2 ring-white shadow-md overflow-hidden`}
+        className={`rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 ring-2 ring-white shadow-md overflow-hidden`}
         style={{ width: size, height: size }}
       >
         {!imageError ? (
@@ -50,9 +50,9 @@ export function Avatar({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold" style={{ fontSize: size * 0.35 }}>
-            {getInitials()}
-          </div>
+            <div className="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold" style={{ fontSize: size * 0.35 }}>
+              {getInitials()}
+            </div>
         )}
       </div>
       {showBadge && (
@@ -81,7 +81,7 @@ export function LargeAvatar({ src, alt, showBadge = true, fallbackText = 'DT' }:
 
   return (
     <div className="relative">
-      <div className="w-36 h-36 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1.5 shadow-2xl ring-4 ring-white/50 dark:ring-gray-800/50">
+      <div className="w-36 h-36 rounded-full bg-gradient-to-br from-teal-500 via-emerald-500 to-cyan-500 p-1.5 shadow-2xl ring-4 ring-white/50 dark:ring-gray-800/50">
         <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 p-1">
           {!imageError ? (
             <Image
@@ -94,14 +94,14 @@ export function LargeAvatar({ src, alt, showBadge = true, fallbackText = 'DT' }:
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold">
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-4xl font-bold">
               {fallbackText}
             </div>
           )}
         </div>
       </div>
       {showBadge && (
-        <div className="absolute bottom-1 right-1 w-10 h-10 bg-green-500 rounded-full border-4 border-white dark:border-gray-900 shadow-xl flex items-center justify-center ring-2 ring-green-400/50">
+        <div className="absolute bottom-1 right-1 w-10 h-10 bg-emerald-500 rounded-full border-4 border-white dark:border-gray-900 shadow-xl flex items-center justify-center ring-2 ring-emerald-400/50">
           <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
         </div>
       )}

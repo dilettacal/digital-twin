@@ -15,7 +15,7 @@ export default function Home() {
             <div className="mb-6">
               <LargeAvatar src="/avatar.png" alt="Diletta" fallbackText="DC" />
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-center text-gray-900 dark:text-gray-50 mb-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl sm:text-6xl font-bold text-center text-gray-900 dark:text-gray-50 mb-3 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 dark:from-teal-400 dark:via-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
               Talk to Luna
             </h1>
             <p className="text-center text-gray-700 dark:text-gray-300 text-xl font-medium mb-2">
