@@ -205,3 +205,63 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Personal Files
+# Ignore all files in backend/data/ except templates
+backend/data/*
+!backend/data/
+!backend/data/*_template.*
+!backend/data/*_template
+
+# Encrypted files (downloaded from releases)
+backend/data-encrypted/
+backend/data-encrypted-download/
+
+# Conversation memory (local development)
+memory/
+
+# Environment variables (encryption keys, tokens)
+.env
+backend/.env
+*.env
+!.env.example
+!backend/.env.example
+
+
+lambda-deployment.zip
+lambda-package/
+
+
+# Terraform
+# State files (contain sensitive data, should use remote backend)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+terraform.tfstate.d/
+
+# Terraform provider dependencies (downloaded automatically)
+.terraform/
+.terraform.lock.hcl
+
+# Variable files with secrets (use .example files instead)
+terraform.tfvars
+terraform.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+# Environment-specific variable files (may contain secrets)
+**/prod.tfvars
+**/dev.tfvars
+**/test.tfvars
+**/staging.tfvars
+# Note: *.tfvars.example files SHOULD be committed
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform config files
+.terraformrc
+terraform.rc

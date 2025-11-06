@@ -1,0 +1,19 @@
+# Example Production Terraform variables file
+# Copy this to prod.tfvars and fill in your production values
+
+project_name             = "your-project-name"
+environment              = "prod"
+bedrock_model_id         = "eu.amazon.nova-pro-v1:0"  # Production model
+lambda_timeout           = 60
+api_throttle_burst_limit = 100  # Higher limits for production
+api_throttle_rate_limit  = 50   # Higher limits for production
+use_custom_domain        = true  # Enable custom domain for production
+root_domain              = "your-domain.com"  # Replace with your actual domain
+
+# Production Considerations:
+# - Use a more powerful Bedrock model (nova-pro vs nova-micro)
+# - Higher API throttling limits for production traffic
+# - Enable custom domain with SSL certificate
+# - Consider using AWS Secrets Manager for sensitive values
+# - Set up monitoring and alerting
+# - Configure backup and disaster recovery
