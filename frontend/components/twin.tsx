@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot } from 'lucide-react';
-import { Avatar } from './avatar';
+import { Send, Bot, User } from 'lucide-react';
 
 interface Message {
     id: string;
@@ -197,12 +196,9 @@ export default function Twin() {
 
                         {message.role === 'user' && (
                             <div className="flex-shrink-0 mb-1">
-                                <Avatar 
-                                    src="/avatar.png" 
-                                    alt="You" 
-                                    size={40} 
-                                    fallbackText="You"
-                                />
+                                <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-md ring-2 ring-teal-500 dark:ring-emerald-500">
+                                    <User className="w-5 h-5 text-teal-600 dark:text-emerald-400" />
+                                </div>
                             </div>
                         )}
                     </div>
@@ -238,13 +234,13 @@ export default function Twin() {
                         onKeyDown={handleKeyPress}
                         placeholder="Type your message..."
                         maxLength={2000}
-                        className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                        className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-emerald-400 focus:border-transparent text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
                         disabled={isLoading}
                     />
                     <button
                         onClick={sendMessage}
                         disabled={!input.trim() || isLoading}
-                        className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                        className="px-5 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:from-teal-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                     >
                         <Send className="w-5 h-5" />
                     </button>
