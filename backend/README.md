@@ -15,12 +15,19 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── config.py      # Configuration
 │   │   ├── context.py     # AI context/prompts
+│   │   ├── prompt_loader.py # Prompt file loader
 │   │   ├── rate_limiter.py # Rate limiting
 │   │   └── resources.py   # Data resources
 │   └── services/          # Business logic
 │       ├── __init__.py
 │       ├── ai_service.py  # AI provider integration
 │       └── memory_service.py # Conversation storage
+├── data/                  # Personal data & prompts
+│   ├── prompts/          # AI prompt templates
+│   │   ├── system_prompt.txt
+│   │   ├── critical_rules.txt
+│   │   └── proficiency_levels.json
+│   └── facts.json, etc.  # Personal data files
 ├── tests/                 # Test suite
 │   ├── test_api.py
 │   └── test_rate_limiter.py
