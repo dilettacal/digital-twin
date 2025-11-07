@@ -41,7 +41,7 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chat`, { // https://xxxxxxxx.execute-api.eu-west-1.amazonaws.com/chat
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,9 +53,33 @@ export default function Twin() {
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`HTTP ${response.status}: ${errorText}`);
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
+                // Try to parse error as JSON first (FastAPI returns JSON errors)
+                let errorDetail = '';
+                try {
+                    const errorData = await response.json();
+                    errorDetail = errorData.detail || errorData.message || '';
+                } catch {
+                    errorDetail = await response.text();
+                }
+                
+                console.error(`HTTP ${response.status}: ${errorDetail}`);
+                
+                // Handle different error types with user-friendly messages
+                let errorMessage = '';
+                
+                if (response.status === 429) {
+                    // Rate limit error - show the server's message directly
+                    errorMessage = `⏱️ ${errorDetail}`;
+                } else if (response.status === 400) {
+                    // Validation error - show the server's message
+                    errorMessage = `❌ ${errorDetail}`;
+                } else if (response.status === 500) {
+                    errorMessage = '⚠️ Sorry, something went wrong on my end. Please try again in a moment.';
+                } else {
+                    errorMessage = `⚠️ Error: ${errorDetail}`;
+                }
+                
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -75,11 +99,11 @@ export default function Twin() {
         } catch (error) {
             console.error('Error:', error);
             
-            // Get more detailed error information
-            let errorMessage = 'Sorry, I encountered an error. Please try again.';
+            // Get error message
+            let errorMessage = '⚠️ Sorry, I encountered an error. Please try again.';
             if (error instanceof Error) {
                 console.error('Error details:', error.message);
-                errorMessage = `Error: ${error.message}`;
+                errorMessage = error.message;
             }
             
             // Add error message
@@ -213,6 +237,7 @@ export default function Twin() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyPress}
                         placeholder="Type your message..."
+                        maxLength={2000}
                         className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
                         disabled={isLoading}
                     />
@@ -224,6 +249,11 @@ export default function Twin() {
                         <Send className="w-5 h-5" />
                     </button>
                 </div>
+                {input.length > 1800 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-right">
+                        {input.length}/2000 characters
+                    </p>
+                )}
             </div>
         </div>
     );

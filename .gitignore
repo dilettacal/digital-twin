@@ -265,3 +265,9 @@ override.tf.json
 # Terraform config files
 .terraformrc
 terraform.rc
+
+# Documentation folder (except README)
+docs/
+!docs/README.md
+
+.DS_Store

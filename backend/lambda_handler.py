@@ -1,5 +1,6 @@
+"""AWS Lambda handler."""
 from mangum import Mangum
-from server import app
+from app.main import app
 
-# Create the Lambda handler
+# Create Lambda handler
 handler = Mangum(app)

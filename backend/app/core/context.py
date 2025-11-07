@@ -1,4 +1,4 @@
-from resources import linkedin, summary, facts, style
+from app.core.resources import linkedin, summary, facts, style
 from datetime import datetime
 
 
