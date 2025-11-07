@@ -30,6 +30,10 @@ RATE_LIMIT_COOLDOWN_SECONDS = float(os.getenv("RATE_LIMIT_COOLDOWN_SECONDS", "2.
 # CORS configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
+# Clerk authentication (optional)
+CLERK_JWKS_URL = os.getenv("CLERK_JWKS_URL", "")
+CLERK_ISSUER = os.getenv("CLERK_ISSUER", "")
+
 # Initialize clients
 bedrock_client = None
 if AI_PROVIDER == "bedrock":

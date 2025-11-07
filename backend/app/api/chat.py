@@ -6,6 +6,7 @@ from app.models import ChatRequest, ChatResponse
 from app.services.memory_service import load_conversation, save_conversation
 from app.services.ai_service import get_ai_response
 from app.core.rate_limiter import rate_limiter, get_client_identifier
+from app.core.auth import get_current_user
 from app.core.config import (
     RATE_LIMIT_MAX_REQUESTS,
     RATE_LIMIT_WINDOW_SECONDS,
@@ -18,19 +19,27 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, http_request: Request):
     """
-    Chat endpoint with rate limiting.
+    Chat endpoint with rate limiting and optional authentication.
     
     Accepts a message and optional session_id, returns AI response.
+    Authentication is optional but provides better rate limiting.
     """
     try:
+        # Try to get authenticated user (optional)
+        user = await get_current_user(http_request)
+        
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
         
         # Get client identifier for rate limiting
-        client_id = get_client_identifier(
-            request_headers=dict(http_request.headers),
-            session_id=session_id
-        )
+        # Prefer user ID if authenticated, fall back to session/IP
+        if user and user.get("user_id"):
+            client_id = f"user:{user['user_id']}"
+        else:
+            client_id = get_client_identifier(
+                request_headers=dict(http_request.headers),
+                session_id=session_id
+            )
         
         # Check rate limits
         allowed, error_msg = rate_limiter.check_rate_limit(

@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
-//static export 
 const nextConfig: NextConfig = {
-  output: 'export',
+  // leaving output undefined so that middleware and Clerk auth can run on the edge runtime
   images: {
     unoptimized: true
   }

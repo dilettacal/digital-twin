@@ -3,11 +3,39 @@
 import Twin from '@/components/twin';
 import { LargeAvatar } from '@/components/avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
 
 export default function Home() {
+  const { isSignedIn, user } = useUser();
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
       <ThemeToggle />
+      
+      {/* Auth Buttons in top right */}
+      <div className="absolute top-4 right-4 flex items-center gap-3">
+        {isSignedIn ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+            </span>
+            <UserButton afterSignOutUrl="/" />
+          </div>
+        ) : (
+          <>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg hover:from-teal-700 hover:to-emerald-700 transition-all shadow-sm">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </>
+        )}
+      </div>
       <div className="container mx-auto px-4 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto">
           {/* Header with Avatar */}

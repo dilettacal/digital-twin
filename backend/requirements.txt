@@ -7,3 +7,6 @@ pypdf
 mangum
 pytest
 httpx
+pyjwt
+cryptography
+requests
