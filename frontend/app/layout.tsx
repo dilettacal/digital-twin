@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI in Production - Digital Twin",
-  description: "Your AI Digital Twin - Deploy your AI companion to the cloud",
+  title: "Luna - Digital Twin",
+  description: "Luna - Diletta's Digital Twin",
 };
 
 export default function RootLayout({
