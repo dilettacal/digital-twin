@@ -1,0 +1,39 @@
+categories:
+  core:
+    title: Core Expertise
+    items:
+      - name: Your Core Skill 1
+      - name: Your Core Skill 2
+      - name: Your Core Skill 3
+
+  programming:
+    title: Programming
+    items:
+      - name: Python
+      - name: JavaScript
+      - name: Java
+    description: |
+      Describe your programming experience here. What languages do you use?
+      What are your primary use cases?
+
+  testing:
+    title: Testing
+    items:
+      - name: pytest
+      - name: JUnit
+      - name: Selenium
+    description: |
+      Describe your testing approach and preferred frameworks.
+
+  cloud_devops:
+    title: Cloud Infrastructure & DevOps
+    items:
+      - name: AWS
+      - name: Azure
+      - name: Docker
+      - name: Kubernetes
+    description: |
+      Describe your cloud and DevOps experience.
+
+  # Add more categories as needed
+

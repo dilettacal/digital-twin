@@ -1,23 +1,31 @@
-from pypdf import PdfReader
-import json
+"""
+Legacy resource loader - now imports from data_loader.
 
-# Read LinkedIn PDF
-try:
-    reader = PdfReader("./data/linkedin.pdf")
-    linkedin = ""
-    for page in reader.pages:
-        text = page.extract_text()
-        if text:
-            linkedin += text
-except FileNotFoundError:
-    linkedin = "LinkedIn profile not available"
+This file is kept for backward compatibility.
+New code should import directly from data_loader instead.
+"""
+from app.core.data_loader import (
+    load_facts,
+    load_summary,
+    load_style,
+    load_linkedin,
+    load_skills,
+    load_education,
+    load_experience,
+    load_qna,
+    load_sources,
+    load_me,
+    load_resume,
+    get_person_name,
+    get_person_full_name,
+)
 
-# Read other data files
-with open("./data/summary.txt", "r", encoding="utf-8") as f:
-    summary = f.read()
+# Backward compatible exports
+facts = load_facts()
+summary = load_summary()
+style = load_style()
+linkedin = load_linkedin()
 
-with open("./data/style.txt", "r", encoding="utf-8") as f:
-    style = f.read()
-
-with open("./data/facts.json", "r", encoding="utf-8") as f:
-    facts = json.load(f)
+# Additional exports for convenience
+full_name = get_person_full_name()
+name = get_person_name()

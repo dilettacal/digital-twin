@@ -1,0 +1,71 @@
+{
+  "format_version": "1.0",
+  "maintainer": "Your Name",
+  "last_reviewed": "2025-01-01",
+  "documents": [
+    {
+      "id": "facts",
+      "title": "Canonical Profile Facts",
+      "type": "json",
+      "path": "facts.json",
+      "description": "Structured identity, career, skills, and education data.",
+      "topics": ["identity", "experience", "skills"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "summary",
+      "title": "Narrative Summary",
+      "type": "txt",
+      "path": "summary.txt",
+      "description": "Professional summary and narrative.",
+      "topics": ["experience", "tone", "personal"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "style-guide",
+      "title": "Conversational Style Guide",
+      "type": "txt",
+      "path": "style.txt",
+      "description": "Tone, voice, and response preferences.",
+      "topics": ["tone", "voice"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "experience-structured",
+      "title": "Professional Experience Data",
+      "type": "yml",
+      "path": "experience.yml",
+      "description": "Structured roles and achievements.",
+      "topics": ["experience", "projects"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "skills-structured",
+      "title": "Skills Inventory",
+      "type": "yml",
+      "path": "skills.yml",
+      "description": "Categorized skills and tools.",
+      "topics": ["skills"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "education-structured",
+      "title": "Education History",
+      "type": "yml",
+      "path": "education.yml",
+      "description": "Structured education records.",
+      "topics": ["education"],
+      "confidence": "authoritative"
+    },
+    {
+      "id": "faq",
+      "title": "Frequently Asked Questions",
+      "type": "yml",
+      "path": "qna.yml",
+      "description": "Curated Q&A pairs.",
+      "topics": ["persona", "experience", "contact"],
+      "confidence": "authoritative"
+    }
+  ]
+}
+

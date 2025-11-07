@@ -4,6 +4,7 @@ python-dotenv
 python-multipart
 boto3
 pypdf
+pyyaml
 mangum
 pytest
 httpx

@@ -1,0 +1,37 @@
+roles:
+  - id: current-role
+    title: Your Current Job Title
+    company: Company Name
+    location: City, Country
+    from: 2022-01
+    to: present
+    summary: Brief summary of your role and impact.
+    highlights:
+      - Key achievement or responsibility 1
+      - Key achievement or responsibility 2
+      - Key achievement or responsibility 3
+
+  - id: previous-role
+    title: Previous Job Title
+    company: Previous Company
+    location: City, Country
+    from: 2019-06
+    to: 2021-12
+    highlights:
+      - Achievement 1
+      - Achievement 2
+
+entrepreneurship:
+  - id: side-project
+    title: Your Side Project or Business
+    from: 2020-01
+    to: present
+    skills:
+      - skill 1
+      - skill 2
+    highlights:
+      - What you built or achieved
+      - Impact or results
+
+# Add more roles or entrepreneurial activities as needed
+

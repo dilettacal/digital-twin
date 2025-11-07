@@ -1,0 +1,21 @@
+education:
+  - id: example-degree
+    program: Your Degree Name
+    institution: Your University
+    from: 2018
+    to: 2022
+    thesis: Your Thesis Title (optional)
+    grade: 3.8 GPA (optional)
+    summary: |
+      Brief description of your studies, focus areas, achievements,
+      or relevant coursework.
+
+  - id: another-degree
+    program: Another Degree or Certification
+    institution: Institution Name
+    year_completed: 2023
+    focus: |
+      Description of focus areas or specialization.
+
+# Add more education entries as needed
+

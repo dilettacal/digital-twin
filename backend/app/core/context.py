@@ -1,5 +1,12 @@
 """AI context and prompt generation."""
-from app.core.resources import linkedin, summary, facts, style
+from app.core.data_loader import (
+    load_facts,
+    load_summary,
+    load_style,
+    load_linkedin,
+    get_person_name,
+    get_person_full_name,
+)
 from app.core.prompt_loader import (
     load_system_prompt,
     load_critical_rules,
@@ -9,8 +16,15 @@ from app.core.prompt_loader import (
 from datetime import datetime
 
 
-full_name = facts["full_name"]
-name = facts["name"]
+# Load data using cached loaders
+facts = load_facts()
+summary = load_summary()
+style = load_style()
+linkedin = load_linkedin()
+
+# Convenience accessors
+full_name = get_person_full_name()
+name = get_person_name()
 
 
 def format_tech_item(item, proficiency_levels):

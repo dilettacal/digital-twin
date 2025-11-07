@@ -1,0 +1,25 @@
+faqs:
+  - id: role-overview
+    question: "What do you do in your current role?"
+    answer: |
+      Describe your current role, responsibilities, and impact.
+      This will help your digital twin answer this question consistently.
+
+  - id: favourite-tools
+    question: "What are your favourite tools and technologies?"
+    answer: |
+      List and describe your go-to tools and why you prefer them.
+
+  - id: availability
+    question: "Are you open to new opportunities?"
+    answer: |
+      Your standard response about availability and how to reach you.
+
+  - id: contact-details
+    question: "How can I contact you?"
+    answer: |
+      Your preferred contact methods and any public contact information.
+
+# Add more FAQ entries as needed
+# These will help your digital twin answer common questions consistently
+
