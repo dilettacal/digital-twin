@@ -66,7 +66,19 @@ def main():
             os.makedirs("lambda-package/data", exist_ok=True)
             
             # Download files from S3
-            files_to_download = ["summary.txt", "linkedin.pdf", "facts.json", "style.txt", "me.txt"]
+            files_to_download = [
+                "summary.txt",
+                "linkedin.pdf",
+                "facts.json",
+                "style.txt",
+                "me.txt",
+                "skills.yml",
+                "education.yml",
+                "experience.yml",
+                "qna.yml",
+                "sources.json",
+                "resume.md",
+            ]
             for file_name in files_to_download:
                 try:
                     s3.download_file(personal_data_bucket, file_name, f"lambda-package/data/{file_name}")

@@ -90,6 +90,62 @@ else
     echo "ℹ️  Info: me.txt not found (optional file)"
 fi
 
+# Upload skills.yml
+if [ -f "$DATA_DIR/skills.yml" ]; then
+    aws s3 cp "$DATA_DIR/skills.yml" "s3://$BUCKET_NAME/skills.yml"
+    echo "✅ Uploaded skills.yml"
+else
+    echo "⚠️  Warning: skills.yml not found"
+fi
+
+# Upload education.yml
+if [ -f "$DATA_DIR/education.yml" ]; then
+    aws s3 cp "$DATA_DIR/education.yml" "s3://$BUCKET_NAME/education.yml"
+    echo "✅ Uploaded education.yml"
+else
+    echo "⚠️  Warning: education.yml not found"
+fi
+
+# Upload experience.yml
+if [ -f "$DATA_DIR/experience.yml" ]; then
+    aws s3 cp "$DATA_DIR/experience.yml" "s3://$BUCKET_NAME/experience.yml"
+    echo "✅ Uploaded experience.yml"
+else
+    echo "⚠️  Warning: experience.yml not found"
+fi
+
+# Upload qna.yml
+if [ -f "$DATA_DIR/qna.yml" ]; then
+    aws s3 cp "$DATA_DIR/qna.yml" "s3://$BUCKET_NAME/qna.yml"
+    echo "✅ Uploaded qna.yml"
+else
+    echo "⚠️  Warning: qna.yml not found"
+fi
+
+# Upload sources.json
+if [ -f "$DATA_DIR/sources.json" ]; then
+    aws s3 cp "$DATA_DIR/sources.json" "s3://$BUCKET_NAME/sources.json"
+    echo "✅ Uploaded sources.json"
+else
+    echo "⚠️  Warning: sources.json not found"
+fi
+
+# Upload resume.md (optional)
+if [ -f "$DATA_DIR/resume.md" ]; then
+    aws s3 cp "$DATA_DIR/resume.md" "s3://$BUCKET_NAME/resume.md"
+    echo "✅ Uploaded resume.md"
+else
+    echo "ℹ️  Info: resume.md not found (optional file)"
+fi
+
+# Upload prompts directory
+if [ -d "$DATA_DIR/prompts" ]; then
+    aws s3 sync "$DATA_DIR/prompts/" "s3://$BUCKET_NAME/prompts/" --delete
+    echo "✅ Uploaded prompts/ directory"
+else
+    echo "⚠️  Warning: prompts/ directory not found"
+fi
+
 echo ""
 echo "🎉 Personal data upload complete!"
 echo "📋 Files uploaded to: s3://$BUCKET_NAME"
