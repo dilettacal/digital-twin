@@ -138,8 +138,6 @@ resource "aws_lambda_function" "api" {
       USE_S3             = "true"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
       DEFAULT_AWS_REGION = "eu-west-1"
-      CLERK_JWKS_URL     = var.clerk_jwks_url
-      CLERK_ISSUER       = var.clerk_issuer
     }
   }
 
