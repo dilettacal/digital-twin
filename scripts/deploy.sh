@@ -29,13 +29,28 @@ export TF_IN_AUTOMATION=true
 export TF_CLI_ARGS="-no-color"
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 AWS_REGION=${DEFAULT_AWS_REGION:-eu-west-1}
-terraform init -input=false 
-# -reconfigure \
-#   -backend-config="bucket=digital-twin-terraform-state-${AWS_ACCOUNT_ID}" \
-#   -backend-config="key=terraform.tfstate" \
-#   -backend-config="region=${AWS_REGION}" \
-#   -backend-config="dynamodb_table=${PROJECT_NAME}-terraform-locks" \
-#   -backend-config="encrypt=true"
+
+TF_BACKEND_BUCKET=${TF_BACKEND_BUCKET:-digital-twin-terraform-state-${AWS_ACCOUNT_ID}}
+TF_BACKEND_KEY=${TF_BACKEND_KEY:-${PROJECT_NAME}/${ENVIRONMENT}.tfstate}
+
+if [ "${USE_LOCAL_TERRAFORM_STATE:-}" = "true" ]; then
+  echo "⚠️  Using local Terraform state (not recommended for CI)."
+  terraform init -input=false -backend=false
+else
+  echo "🗄️  Configuring Terraform backend bucket ${TF_BACKEND_BUCKET} (${TF_BACKEND_KEY})"
+  BACKEND_ARGS=(
+    "-backend-config=bucket=${TF_BACKEND_BUCKET}"
+    "-backend-config=key=${TF_BACKEND_KEY}"
+    "-backend-config=region=${AWS_REGION}"
+    "-backend-config=encrypt=true"
+  )
+
+  if [ -n "${TF_BACKEND_DYNAMODB_TABLE:-}" ]; then
+    BACKEND_ARGS+=("-backend-config=dynamodb_table=${TF_BACKEND_DYNAMODB_TABLE}")
+  fi
+
+  terraform init -input=false -reconfigure "${BACKEND_ARGS[@]}"
+fi
 
 if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
   terraform workspace new "$ENVIRONMENT"
