@@ -35,6 +35,11 @@ if [ -z "$GITHUB_TOKEN" ]; then
     fi
     
     if [ -z "$GITHUB_TOKEN" ]; then
+        if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+            echo "❌ Error: GITHUB_TOKEN is required in CI environments to download private assets."
+            exit 1
+        fi
+
         echo "⚠️  Warning: GITHUB_TOKEN not set"
         echo "   This is required for private repositories."
         echo "   Set it as environment variable or in .env file:"

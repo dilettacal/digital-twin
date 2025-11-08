@@ -58,6 +58,21 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Download encrypted data bundle
+        run: |
+          chmod +x scripts/download-encrypted-data.sh
+          ./scripts/download-encrypted-data.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
+          PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
+
+      - name: Decrypt data files
+        run: |
+          chmod +x scripts/decrypt-data.sh
+          ./scripts/decrypt-data.sh
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+
       - name: Run Deployment Script
         run: |
           # Set environment variables for the script

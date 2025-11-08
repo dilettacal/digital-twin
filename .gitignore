@@ -211,6 +211,8 @@ __marimo__/
 # Ignore all files in backend/data/ except templates
 backend/data/*
 !backend/data/
+!backend/data/prompts/
+!backend/data/prompts/**
 !backend/data/*_template.*
 !backend/data/*_template
 
