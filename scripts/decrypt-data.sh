@@ -55,6 +55,7 @@ echo ""
 DECRYPTED_COUNT=0
 FAILED_COUNT=0
 
+set +e  # allow loop to continue on individual failures
 for encrypted_file in "$ENCRYPTED_DIR"/*.encrypted; do
     if [ -f "$encrypted_file" ]; then
         filename=$(basename "$encrypted_file" .encrypted)
@@ -62,21 +63,25 @@ for encrypted_file in "$ENCRYPTED_DIR"/*.encrypted; do
         
         echo "  Decrypting $filename..."
         
-        if openssl enc -aes-256-cbc \
+        openssl enc -aes-256-cbc \
             -d \
             -salt \
             -pbkdf2 \
             -in "$encrypted_file" \
             -out "$output_file" \
-            -pass "pass:$DATA_KEY" 2>/dev/null; then
+            -pass "pass:$DATA_KEY"
+        status=$?
+
+        if [ $status -eq 0 ]; then
             echo "  ✅ Decrypted to $filename"
             ((DECRYPTED_COUNT++))
         else
-            echo "  ❌ Failed to decrypt $filename"
+            echo "  ❌ Failed to decrypt $filename (exit code $status)"
             ((FAILED_COUNT++))
         fi
     fi
 done
+set -e
 
 echo ""
 if [ $DECRYPTED_COUNT -gt 0 ]; then
