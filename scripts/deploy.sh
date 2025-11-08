@@ -74,11 +74,6 @@ echo "NEXT_PUBLIC_API_URL=$API_URL" >> "$ENV_FILE"
 API_URL_SEGMENT=${API_URL##*/}
 echo "📝 Building frontend (NEXT_PUBLIC_API_URL ending with /$API_URL_SEGMENT)"
 
-if [ "${DISABLE_CLERK_FOR_EXPORT:-}" = "true" ]; then
-  echo "NEXT_PUBLIC_DISABLE_CLERK=true" >> "$ENV_FILE"
-  echo "🙈 Clerk auth temporarily disabled for static export build"
-fi
-
 npm install
 npm run build
 aws s3 sync ./out "s3://$FRONTEND_BUCKET/" --delete

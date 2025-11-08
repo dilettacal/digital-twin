@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User } from 'lucide-react';
-import { useAuth } from '@clerk/nextjs';
 
 interface Message {
     id: string;
@@ -12,7 +11,6 @@ interface Message {
 }
 
 export default function Twin() {
-    const { getToken, isSignedIn } = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -42,21 +40,11 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            // Get Clerk auth token if signed in
-            const token = isSignedIn ? await getToken() : null;
-            
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-            };
-            
-            // Add Authorization header if we have a token
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chat`, {
                 method: 'POST',
-                headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     message: input,
                     session_id: sessionId || undefined,
