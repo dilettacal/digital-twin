@@ -9,7 +9,11 @@ echo "🔄 Importing existing resources into Terraform state..."
 cd "$(dirname "$0")/../terraform"
 
 # Make sure we're in the right workspace
-terraform workspace select "$ENVIRONMENT"
+if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
+  terraform workspace new "$ENVIRONMENT"
+else
+  terraform workspace select "$ENVIRONMENT"
+fi
 
 # Get AWS Account ID
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -26,6 +30,10 @@ terraform import aws_iam_role.lambda_role "${PROJECT_NAME}-${ENVIRONMENT}-lambda
 # Import Lambda function
 echo "⚡ Importing Lambda function..."
 terraform import aws_lambda_function.api "${PROJECT_NAME}-${ENVIRONMENT}-api" || echo "  (Lambda already in state or doesn't exist)"
+
+# Import Lambda permission
+echo "🔐 Importing Lambda permission..."
+terraform import aws_lambda_permission.api_gw "${PROJECT_NAME}-${ENVIRONMENT}-api/AllowExecutionFromAPIGateway" || echo "  (Lambda permission already in state or doesn't exist)"
 
 # Import API Gateway (if it exists)
 echo "🌐 Importing API Gateway..."

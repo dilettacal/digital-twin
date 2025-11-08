@@ -51,3 +51,15 @@ variable "root_domain" {
   type        = string
   default     = ""
 }
+
+variable "clerk_jwks_url" {
+  description = "Clerk JWKS URL for JWT validation (e.g., https://your-instance.clerk.accounts.dev/.well-known/jwks.json)"
+  type        = string
+  default     = ""
+}
+
+variable "clerk_issuer" {
+  description = "Clerk issuer URL for JWT validation (e.g., https://your-instance.clerk.accounts.dev)"
+  type        = string
+  default     = ""
+}
