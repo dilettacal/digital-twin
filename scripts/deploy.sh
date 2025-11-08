@@ -13,14 +13,7 @@ echo "📦 Building Lambda package..."
 
 # 2. Terraform workspace & apply
 cd terraform
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-AWS_REGION=${DEFAULT_AWS_REGION:-eu-west-1}  
-terraform init -input=false \
-  -backend-config="bucket=digital-twin-terraform-state-${AWS_ACCOUNT_ID}" \
-  -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
-  -backend-config="region=${AWS_REGION}" \
-  -backend-config="dynamodb_table=digital-twin-terraform-locks" \
-  -backend-config="encrypt=true"
+terraform init -input=false
 
 if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
   terraform workspace new "$ENVIRONMENT"
@@ -45,9 +38,13 @@ CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 # 3. Build + deploy frontend
 cd ../frontend
 
-# Create production environment file with API URL
-echo "📝 Setting API URL for production..."
-echo "NEXT_PUBLIC_API_URL=$API_URL" > .env.production
+# Create production environment file with API URL and Clerk keys
+echo "📝 Setting environment variables for production build..."
+cat > .env.production <<EOF
+NEXT_PUBLIC_API_URL=$API_URL
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
+CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
+EOF
 
 npm install
 npm run build
