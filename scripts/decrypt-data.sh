@@ -81,11 +81,11 @@ while IFS= read -r -d '' encrypted_file; do
     relative_path="${encrypted_file#$ENCRYPTED_PERSONAL_DATA_DIR/}"
     relative_path="${relative_path%.encrypted}"
     output_file="$DATA_DIR/$relative_path"
-        
+
     log "  Decrypting $relative_path..."
 
     mkdir -p "$(dirname "$output_file")"
-        
+
         openssl enc -aes-256-cbc \
             -d \
             -salt \
@@ -168,4 +168,3 @@ if [ "$quiet" = false ]; then
     echo ""
     echo "✅ All files decrypted successfully!"
 fi
-

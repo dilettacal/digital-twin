@@ -60,12 +60,12 @@ def prompt():
     # Load template and rules
     template = load_system_prompt()
     rules = load_critical_rules()
-    
+
     # Format variables
     formatted_facts = get_formatted_facts()
     critical_rules_formatted = format_critical_rules(rules)
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Fill in template
     return template.format(
         full_name=full_name,

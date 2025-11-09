@@ -1,2 +1,1 @@
 """Digital Twin Backend Application."""
-

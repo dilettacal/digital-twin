@@ -29,7 +29,7 @@ jobs:
     name: Deploy to ${{ github.event.inputs.environment || 'dev' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'dev' }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
           # Set environment variables for the script
           export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
           export DEFAULT_AWS_REGION=${{ secrets.DEFAULT_AWS_REGION }}
-          
+
           # Make script executable and run it
           chmod +x scripts/deploy.sh
           ./scripts/deploy.sh ${{ github.event.inputs.environment || 'dev' }}
@@ -77,7 +77,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
           PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
           DATA_KEY: ${{ secrets.DATA_KEY }}
-          
+
       - name: Get Deployment URLs
         id: deploy_outputs
         working-directory: ./terraform
@@ -92,7 +92,7 @@ jobs:
           DISTRIBUTION_ID=$(aws cloudfront list-distributions \
             --query "DistributionList.Items[?Origins.Items[?DomainName=='${{ steps.deploy_outputs.outputs.frontend_bucket }}.s3-website-${{ secrets.DEFAULT_AWS_REGION }}.amazonaws.com']].Id | [0]" \
             --output text)
-          
+
           if [ "$DISTRIBUTION_ID" != "None" ] && [ -n "$DISTRIBUTION_ID" ]; then
             aws cloudfront create-invalidation \
               --distribution-id $DISTRIBUTION_ID \

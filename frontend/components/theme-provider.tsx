@@ -18,30 +18,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     const initialTheme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'light';
-    
+
     // Apply the theme to the document
     if (initialTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    
+
     setTheme(initialTheme);
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    
+
     // Update document
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    
+
     // Save to localStorage
     localStorage.setItem('theme', newTheme);
-    
+
     // Update state
     setTheme(newTheme);
   };
@@ -60,4 +60,3 @@ export function useTheme() {
   }
   return context;
 }
-

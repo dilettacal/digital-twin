@@ -55,4 +55,3 @@ if AI_PROVIDER == "openai":
 s3_client = None
 if USE_S3:
     s3_client = boto3.client("s3")
-

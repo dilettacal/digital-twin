@@ -147,4 +147,3 @@ echo "  3. Optional: me.txt"
 echo "  4. Customize prompt files in $PROMPTS_DIR as needed"
 echo ""
 echo "💡 These files are gitignored and won't be committed to the repository."
-

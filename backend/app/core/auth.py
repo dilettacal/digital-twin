@@ -20,7 +20,7 @@ def get_clerk_jwks():
     """
     if not CLERK_JWKS_URL:
         return None
-    
+
     try:
         response = requests.get(CLERK_JWKS_URL, timeout=5)
         response.raise_for_status()
@@ -33,37 +33,37 @@ def get_clerk_jwks():
 def verify_clerk_token(token: str) -> Optional[dict]:
     """
     Verify a Clerk JWT token using JWKS.
-    
+
     Returns the decoded token payload if valid, None otherwise.
     """
     if not token:
         return None
-    
+
     try:
         # For development, decode without verification if no Clerk config
         if not CLERK_JWKS_URL or not CLERK_ISSUER:
             print("Warning: Running without Clerk config - accepting all tokens in development mode")
             # In dev mode without Clerk, just decode without verification
             return jwt.decode(token, options={"verify_signature": False})
-        
+
         # Decode header to get the key ID
         header = jwt.get_unverified_header(token)
-        
+
         # Get JWKS
         jwks = get_clerk_jwks()
         if not jwks:
             raise Exception("Could not fetch JWKS")
-        
+
         # Find the right key
         key = None
         for jwk in jwks.get("keys", []):
             if jwk.get("kid") == header.get("kid"):
                 key = jwt.algorithms.RSAAlgorithm.from_jwk(jwk)
                 break
-        
+
         if not key:
             raise Exception("Key not found in JWKS")
-        
+
         # Verify and decode with issuer validation
         payload = jwt.decode(
             token,
@@ -72,9 +72,9 @@ def verify_clerk_token(token: str) -> Optional[dict]:
             issuer=CLERK_ISSUER,  # Validate issuer
             options={"verify_signature": True}
         )
-        
+
         return payload
-        
+
     except jwt.ExpiredSignatureError:
         print("Token has expired")
         return None
@@ -93,19 +93,19 @@ async def get_current_user(request: Request) -> Optional[dict]:
     """
     # Get Authorization header
     auth_header = request.headers.get("Authorization", "")
-    
+
     if not auth_header.startswith("Bearer "):
         return None
-    
+
     # Extract token
     token = auth_header.replace("Bearer ", "")
-    
+
     # Verify token
     payload = verify_clerk_token(token)
-    
+
     if not payload:
         return None
-    
+
     # Extract user info from Clerk token
     return {
         "user_id": payload.get("sub"),  # Clerk user ID
@@ -121,12 +121,11 @@ async def require_auth(request: Request) -> dict:
     Use this for protected endpoints.
     """
     user = await get_current_user(request)
-    
+
     if not user:
         raise HTTPException(
             status_code=401,
             detail="Authentication required. Please sign in."
         )
-    
-    return user
 
+    return user

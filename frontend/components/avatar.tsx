@@ -13,11 +13,11 @@ interface AvatarProps {
   className?: string;
 }
 
-export function Avatar({ 
-  src, 
-  alt, 
-  size, 
-  showBadge = false, 
+export function Avatar({
+  src,
+  alt,
+  size,
+  showBadge = false,
   badgeColor = 'green',
   fallbackText,
   className = ''
@@ -36,7 +36,7 @@ export function Avatar({
 
   return (
     <div className={`relative ${className}`}>
-      <div 
+      <div
         className={`rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 ring-2 ring-white shadow-md overflow-hidden`}
         style={{ width: size, height: size }}
       >
@@ -56,10 +56,10 @@ export function Avatar({
         )}
       </div>
       {showBadge && (
-        <div 
+        <div
           className={`absolute bottom-0 right-0 rounded-full border-2 border-white`}
-          style={{ 
-            width: size >= 40 ? '14px' : '12px', 
+          style={{
+            width: size >= 40 ? '14px' : '12px',
             height: size >= 40 ? '14px' : '12px',
             backgroundColor: badgeColor === 'green' ? '#10b981' : '#6366f1'
           }}
@@ -108,4 +108,3 @@ export function LargeAvatar({ src, alt, showBadge = true, fallbackText = 'DT' }:
     </div>
   );
 }
-

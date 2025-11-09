@@ -195,10 +195,10 @@ def load_linkedin(skip_on_error: bool = True) -> str:
     """
     Load LinkedIn profile from PDF.
     This is an expensive operation, so it's cached and can be skipped on error.
-    
+
     Args:
         skip_on_error: If True, returns fallback message on error instead of raising
-    
+
     Returns:
         Extracted text from LinkedIn PDF or fallback message
     """
@@ -251,10 +251,10 @@ def get_person_full_name() -> str:
 def get_all_data(include_linkedin: bool = False) -> Dict[str, Any]:
     """
     Load all data files into a single dictionary.
-    
+
     Args:
         include_linkedin: If True, includes the LinkedIn PDF (slow)
-    
+
     Returns:
         Dictionary with all loaded data
     """
@@ -311,4 +311,3 @@ linkedin = load_linkedin()
 # For easy access
 full_name = facts.get("full_name", "")
 name = facts.get("name", "")
-

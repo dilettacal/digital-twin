@@ -27,4 +27,3 @@ if [ -d ".terraform.lock.hcl" ]; then
 fi
 
 echo "✅ Terraform artifacts cleaned!"
-

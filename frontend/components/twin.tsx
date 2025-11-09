@@ -60,12 +60,12 @@ export default function Twin() {
                 } catch {
                     errorDetail = await response.text();
                 }
-                
+
                 console.error(`HTTP ${response.status}: ${errorDetail}`);
-                
+
                 // Handle different error types with user-friendly messages
                 let errorMessage = '';
-                
+
                 if (response.status === 429) {
                     // Rate limit error - show the server's message directly
                     errorMessage = `⏱️ ${errorDetail}`;
@@ -77,7 +77,7 @@ export default function Twin() {
                 } else {
                     errorMessage = `⚠️ Error: ${errorDetail}`;
                 }
-                
+
                 throw new Error(errorMessage);
             }
 
@@ -97,14 +97,14 @@ export default function Twin() {
             setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
             console.error('Error:', error);
-            
+
             // Get error message
             let errorMessage = '⚠️ Sorry, I encountered an error. Please try again.';
             if (error instanceof Error) {
                 console.error('Error details:', error.message);
                 errorMessage = error.message;
             }
-            
+
             // Add error message
             const errorMsg: Message = {
                 id: (Date.now() + 1).toString(),

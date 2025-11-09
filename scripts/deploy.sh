@@ -125,7 +125,7 @@ else
     else
       announce "⚠️  Warning: download-encrypted-data.sh not found, skipping..."
     fi
-    
+
     log ""
     announce "🔓 Step 2: Decrypt data..."
     if [ -f "$SCRIPT_DIR/decrypt-data.sh" ]; then
@@ -134,7 +134,7 @@ else
       announce "⚠️  Warning: decrypt-data.sh not found, skipping..."
     fi
   fi
-  
+
   log ""
   announce "☁️  Step 3: Upload data to S3..."
   if [ -f "$SCRIPT_DIR/upload-personal-data.sh" ]; then

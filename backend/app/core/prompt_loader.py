@@ -95,4 +95,3 @@ def clear_prompt_cache():
     load_system_prompt.cache_clear()
     load_critical_rules.cache_clear()
     load_proficiency_levels.cache_clear()
-

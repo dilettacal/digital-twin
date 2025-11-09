@@ -1,3 +1,3 @@
 # AVATAR
 
-Replace `avatar.png` with your avatar. 
+Replace `avatar.png` with your avatar.

@@ -66,14 +66,14 @@ def setup_test_environment():
     os.environ["USE_S3"] = "false"
     os.environ["MEMORY_DIR"] = "/tmp/test-memory"
     os.environ["CORS_ORIGINS"] = "http://localhost:3000"
-    
+
     # Rate limiting configuration for tests
     os.environ["RATE_LIMIT_MAX_REQUESTS"] = "5"
     os.environ["RATE_LIMIT_WINDOW_SECONDS"] = "10"
     os.environ["RATE_LIMIT_COOLDOWN_SECONDS"] = "1.0"
-    
+
     yield
-    
+
     # Cleanup
     if os.path.exists("/tmp/test-memory"):
         import shutil
@@ -106,12 +106,11 @@ def mock_bedrock_response(monkeypatch):
                 }
             }
         }
-    
+
     # Only mock if using bedrock
     if os.environ.get("AI_PROVIDER") == "bedrock":
         from app.core.config import bedrock_client
         if bedrock_client:
             monkeypatch.setattr(bedrock_client, "converse", mock_converse)
-    
-    return mock_converse
 
+    return mock_converse

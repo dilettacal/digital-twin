@@ -8,7 +8,7 @@ class ChatRequest(BaseModel):
     """Chat request model."""
     message: str
     session_id: Optional[str] = None
-    
+
     @field_validator('message')
     @classmethod
     def validate_message(cls, v: str) -> str:
@@ -30,4 +30,3 @@ class Message(BaseModel):
     role: str
     content: str
     timestamp: str
-

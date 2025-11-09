@@ -19,7 +19,7 @@ variable "environment" {
 variable "bedrock_model_id" {
   description = "Bedrock model ID"
   type        = string
-  default     = "eu.amazon.nova-lite-v1:0" 
+  default     = "eu.amazon.nova-lite-v1:0"
 }
 
 variable "lambda_timeout" {

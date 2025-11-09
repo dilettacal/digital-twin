@@ -45,11 +45,11 @@ def main():
     for file in ["server.py", "lambda_handler.py"]:
         if os.path.exists(file):
             shutil.copy2(file, "lambda-package/")
-    
+
     # Copy app directory
     if os.path.exists("app"):
         shutil.copytree("app", "lambda-package/app")
-    
+
     # Create data directories in package
     lambda_data_dir = "lambda-package/data"
     lambda_personal_data_dir = os.path.join(lambda_data_dir, "personal_data")
@@ -57,7 +57,7 @@ def main():
     os.makedirs(lambda_personal_data_dir, exist_ok=True)
     os.makedirs(lambda_prompts_dir, exist_ok=True)
     prompts_template_dir = os.path.join("data", "prompts_template")
-    
+
     # Download personal data from S3 if bucket is specified
     personal_data_bucket = os.getenv("PERSONAL_DATA_BUCKET")
     prompts_synced = False
@@ -66,7 +66,7 @@ def main():
         try:
             import boto3
             s3 = boto3.client('s3')
-            
+
             # Download personal data files from S3 (under personal_data/ prefix)
             print("📥 Downloading personal data files from S3...")
             paginator = s3.get_paginator("list_objects_v2")
@@ -105,7 +105,7 @@ def main():
                         print(f"✅ Downloaded prompt {relative_path} from S3")
                     except Exception as e:
                         print(f"⚠️  Warning: Could not download prompt {key} from S3: {e}")
-                    
+
         except Exception as e:
             print(f"⚠️  Warning: Could not download from S3: {e}")
             print("   Falling back to local data files...")
@@ -199,10 +199,10 @@ def main():
         else:
             print(f"  ❌ MISSING: {path}")
             missing_paths.append(path)
-    
+
     if missing_paths:
         raise FileNotFoundError(f"Critical files missing from package: {missing_paths}")
-    
+
     # Create zip
     print("\n📦 Creating zip file...")
     with zipfile.ZipFile("lambda-deployment.zip", "w", zipfile.ZIP_DEFLATED) as zipf:

@@ -295,7 +295,7 @@ After successful deployment, you'll see output like:
 
 ### Security Note
 
-🔒 **The API Gateway URL is intentionally not displayed in deployment outputs** 
+🔒 **The API Gateway URL is intentionally not displayed in deployment outputs**
 
 **If you need the API Gateway URL for debugging:**
 
@@ -480,7 +480,7 @@ aws s3 rb s3://digital-twin-terraform-state-${AWS_ACCOUNT_ID} --force
 aws dynamodb delete-table --table-name digital-twin-terraform-locks
 ```
 
-**⚠️ Warning**: 
+**⚠️ Warning**:
 - This will delete all resources including data buckets and conversation history
 - Make sure to backup any important data before destroying
 - The destroy operation is irreversible
@@ -498,4 +498,3 @@ The serverless architecture is cost-effective:
 - **DynamoDB**: On-demand billing (pay per request)
 
 **Estimated monthly cost** for low-traffic usage: $5-10/month
-

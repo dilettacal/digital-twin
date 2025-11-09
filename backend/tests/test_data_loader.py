@@ -153,13 +153,13 @@ class TestCaching:
         """Test cache clearing."""
         # Load data
         facts1 = load_facts()
-        
+
         # Clear cache
         clear_data_cache()
-        
+
         # Load again - should be different object
         facts2 = load_facts()
-        
+
         # Objects should have same content but different reference
         assert facts1 == facts2
         # Note: After cache clear, they might still be the same object
@@ -182,7 +182,7 @@ class TestDataStructure:
         assert "categories" in skills
         categories = skills["categories"]
         assert isinstance(categories, dict)
-        
+
         # Check that at least one category has expected structure
         for category_id, category in categories.items():
             if "title" in category:
@@ -196,7 +196,7 @@ class TestDataStructure:
         assert "roles" in experience
         roles = experience["roles"]
         assert isinstance(roles, list)
-        
+
         if len(roles) > 0:
             role = roles[0]
             assert "id" in role
@@ -209,10 +209,9 @@ class TestDataStructure:
         assert "faqs" in qna
         faqs = qna["faqs"]
         assert isinstance(faqs, list)
-        
+
         if len(faqs) > 0:
             faq = faqs[0]
             assert "id" in faq
             assert "question" in faq
             assert "answer" in faq
-

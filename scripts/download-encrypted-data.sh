@@ -53,7 +53,7 @@ if [ -z "$GITHUB_TOKEN" ]; then
         source "$TWIN_DIR/.env"
         GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_PAT:-}}"
     fi
-    
+
     if [ -z "$GITHUB_TOKEN" ]; then
         if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
         log "❌ Error: GITHUB_TOKEN is required in CI environments to download private assets."
@@ -81,25 +81,25 @@ mkdir -p "$DOWNLOAD_DIR"
 # Check if GitHub CLI is available
 if command -v gh &> /dev/null; then
     log "Using GitHub CLI..."
-    
+
     # Authenticate if needed
     if [ -n "$GITHUB_TOKEN" ]; then
         export GH_TOKEN="$GITHUB_TOKEN"
     fi
-    
+
     # Get latest release
     log "Fetching latest release..."
     LATEST_RELEASE=$(gh release list --repo "$PRIVATE_REPO_NAME" --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
-    
+
     if [ -z "$LATEST_RELEASE" ]; then
         log "❌ Error: No releases found in repository $SAFE_REPO_NAME"
         log "   Make sure the repository exists and has at least one release."
         exit 1
     fi
-    
+
     log "   Latest release: $LATEST_RELEASE"
     log ""
-    
+
     # Download the zip file
     log "Downloading release asset..."
     gh release download "$LATEST_RELEASE" \
@@ -107,15 +107,15 @@ if command -v gh &> /dev/null; then
         --pattern "data-encrypted-*.zip" \
         --dir "$DOWNLOAD_DIR" \
         --clobber
-    
+
     log "✅ Download complete!"
-    
+
 elif command -v curl &> /dev/null && command -v jq &> /dev/null; then
     log "Using curl and GitHub API..."
-    
+
     # Build API URL
     API_URL="https://api.github.com/repos/$PRIVATE_REPO_NAME/releases/latest"
-    
+
     # Get latest release info
     log "Fetching latest release info..."
     if [ -n "$GITHUB_TOKEN" ]; then
@@ -123,24 +123,24 @@ elif command -v curl &> /dev/null && command -v jq &> /dev/null; then
     else
         RELEASE_INFO=$(curl -s "$API_URL")
     fi
-    
+
     if echo "$RELEASE_INFO" | jq -e '.message' > /dev/null 2>&1; then
         log "❌ Error: $(echo "$RELEASE_INFO" | jq -r '.message')"
         exit 1
     fi
-    
+
     TAG_NAME=$(echo "$RELEASE_INFO" | jq -r '.tag_name')
     log "   Latest release: $TAG_NAME"
     log ""
-    
+
     # Find the zip asset
     ZIP_URL=$(echo "$RELEASE_INFO" | jq -r '.assets[] | select(.name | startswith("data-encrypted")) | .browser_download_url' | head -1)
-    
+
     if [ -z "$ZIP_URL" ] || [ "$ZIP_URL" = "null" ]; then
     log "❌ Error: No encrypted data zip file found in release"
         exit 1
     fi
-    
+
     # Download the zip file
     log "Downloading: $(basename $ZIP_URL)"
     if [ -n "$GITHUB_TOKEN" ]; then
@@ -148,9 +148,9 @@ elif command -v curl &> /dev/null && command -v jq &> /dev/null; then
     else
         curl -L "$ZIP_URL" -o "$DOWNLOAD_DIR/data-encrypted.zip"
     fi
-    
+
     log "✅ Download complete!"
-    
+
 else
     log "❌ Error: Need either 'gh' CLI or 'curl' + 'jq' installed"
     log ""
@@ -180,4 +180,3 @@ rm -rf "$DOWNLOAD_DIR"
 log "✅ Encrypted files extracted to: $ENCRYPTED_DIR"
 log ""
 log "Next: Run decryption script to decrypt the files"
-

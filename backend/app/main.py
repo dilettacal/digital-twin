@@ -61,9 +61,8 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {
-        "status": "healthy", 
+        "status": "healthy",
         "use_s3": USE_S3,
         "ai_provider": AI_PROVIDER,
         "ai_model": OPENAI_MODEL if AI_PROVIDER == "openai" else BEDROCK_MODEL_ID
     }
-

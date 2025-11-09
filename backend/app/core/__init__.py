@@ -1,2 +1,1 @@
 """Core functionality and utilities."""
-

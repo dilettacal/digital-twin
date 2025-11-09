@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 async def chat(request: ChatRequest, http_request: Request):
     """
     Chat endpoint with rate limiting and optional authentication.
-    
+
     Accepts a message and optional session_id, returns AI response.
     Authentication is optional but provides better rate limiting.
     """
@@ -106,4 +106,3 @@ async def get_conversation(session_id: str):
         raise HTTPException(status_code=500, detail=str(exc))
     finally:
         clear_contextvars()
-
