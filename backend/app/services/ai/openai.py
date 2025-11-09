@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Dict, List
+from typing import Dict, Iterator, List
 
 try:
     HTTPException = getattr(importlib.import_module("fastapi"), "HTTPException")
@@ -55,6 +55,7 @@ class OpenAIAIService(AIService):
                 messages=messages,
                 max_tokens=2000,
                 temperature=0.7,
+
             )
         except Exception as exc:
             self._logger.error("ai_request_failed", detail=str(exc))
@@ -68,3 +69,44 @@ class OpenAIAIService(AIService):
 
         self._logger.info("ai_request_completed", response_length=len(content or ""))
         return content
+
+    def stream_response(self, conversation: List[Dict], user_message: str) -> Iterator[str]:
+        self._logger.debug("ai_stream_started", history_length=len(conversation))
+        messages = self._build_messages(conversation, user_message)
+
+        try:
+            stream = self._client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.7,
+                stream=True,
+            )
+        except Exception as exc:
+            self._logger.error("ai_stream_failed", detail=str(exc))
+            raise HTTPException(status_code=500, detail=f"OpenAI error: {exc}") from exc
+
+        total_length = 0
+        try:
+            for chunk in stream:
+                try:
+                    delta = chunk.choices[0].delta
+                    content_piece = getattr(delta, "content", None)
+                except (AttributeError, IndexError) as chunk_exc:
+                    self._logger.warning("ai_stream_chunk_parse_failed", error=str(chunk_exc))
+                    continue
+
+                if isinstance(content_piece, list):
+                    content_piece = "".join(
+                        fragment
+                        for fragment in content_piece
+                        if isinstance(fragment, str)
+                    )
+
+                if not content_piece:
+                    continue
+
+                total_length += len(content_piece)
+                yield content_piece
+        finally:
+            self._logger.info("ai_stream_completed", response_length=total_length)

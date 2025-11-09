@@ -1,7 +1,9 @@
 """Chat API endpoints."""
 import uuid
 from datetime import datetime
+import json
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from app.models import ChatRequest, ChatResponse
 from app.services.memory import get_memory_service
 from app.services.ai import get_ai_service
@@ -19,6 +21,11 @@ router = APIRouter()
 logger = get_logger(__name__)
 memory_service = get_memory_service()
 ai_service = get_ai_service()
+
+
+def _format_sse(event: str, data: dict) -> str:
+    """Format data as an SSE event."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -59,41 +66,108 @@ async def chat(request: ChatRequest, http_request: Request):
 
         conversation = memory_service.load_conversation(session_id)
 
-        assistant_response = ai_service.generate_response(conversation, request.message)
+        wants_stream = "text/event-stream" in http_request.headers.get("accept", "")
 
-        conversation.append(
-            {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
-        )
-        conversation.append(
-            {
-                "role": "assistant",
-                "content": assistant_response,
-                "timestamp": datetime.now().isoformat(),
-            }
-        )
+        conversation_snapshot = list(conversation)
 
-        memory_service.save_conversation(session_id, conversation)
+        if not wants_stream:
+            assistant_response = ai_service.generate_response(conversation_snapshot, request.message)
 
-        logger.info(
-            "chat_completed",
-            authenticated=bool(user),
-            provided_session_id=bool(request.session_id),
-            message_count=len(conversation),
-        )
+            conversation_snapshot.append(
+                {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
+            )
+            conversation_snapshot.append(
+                {
+                    "role": "assistant",
+                    "content": assistant_response,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
-        return ChatResponse(response=assistant_response, session_id=session_id)
+            memory_service.save_conversation(session_id, conversation_snapshot)
+
+            logger.info(
+                "chat_completed",
+                authenticated=bool(user),
+                provided_session_id=bool(request.session_id),
+                message_count=len(conversation_snapshot),
+                streamed=False,
+            )
+
+            clear_contextvars()
+            return ChatResponse(response=assistant_response, session_id=session_id)
+
+        async def event_stream():
+            assistant_chunks = []
+            try:
+                yield _format_sse("session", {"session_id": session_id})
+
+                for chunk in ai_service.stream_response(conversation_snapshot, request.message):
+                    if not chunk:
+                        continue
+
+                    assistant_chunks.append(chunk)
+                    yield _format_sse("token", {"delta": chunk})
+
+                assistant_response = "".join(assistant_chunks)
+                conversation_snapshot.append(
+                    {
+                        "role": "user",
+                        "content": request.message,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+                conversation_snapshot.append(
+                    {
+                        "role": "assistant",
+                        "content": assistant_response,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+                memory_service.save_conversation(session_id, conversation_snapshot)
+
+                logger.info(
+                    "chat_completed",
+                    authenticated=bool(user),
+                    provided_session_id=bool(request.session_id),
+                    message_count=len(conversation_snapshot),
+                    streamed=True,
+                )
+
+                yield _format_sse("done", {"response": assistant_response})
+            except HTTPException as exc:
+                logger.warning("chat_http_error_stream", status_code=exc.status_code, detail=exc.detail)
+                yield _format_sse("error", {"status_code": exc.status_code, "detail": exc.detail})
+                return
+            except ValueError as exc:
+                logger.warning("chat_validation_error_stream", error=str(exc))
+                yield _format_sse("error", {"status_code": 400, "detail": str(exc)})
+                return
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("chat_unexpected_error_stream", error=str(exc))
+                yield _format_sse("error", {"status_code": 500, "detail": str(exc)})
+                return
+            finally:
+                clear_contextvars()
+
+        headers = {
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+        return StreamingResponse(event_stream(), headers=headers, media_type="text/event-stream")
 
     except HTTPException as exc:
         logger.warning("chat_http_error", status_code=exc.status_code, detail=exc.detail)
+        clear_contextvars()
         raise
     except ValueError as exc:
         logger.warning("chat_validation_error", error=str(exc))
+        clear_contextvars()
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         logger.exception("chat_unexpected_error", error=str(exc))
-        raise HTTPException(status_code=500, detail=str(exc))
-    finally:
         clear_contextvars()
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.get("/conversation/{session_id}")

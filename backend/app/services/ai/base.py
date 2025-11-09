@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Dict, Iterator, List
 
 
 class AIService(ABC):
@@ -29,3 +29,12 @@ class AIService(ABC):
     @abstractmethod
     def generate_response(self, conversation: List[Dict], user_message: str) -> str:
         """Return the assistant response given the conversation and user message."""
+
+    def stream_response(self, conversation: List[Dict], user_message: str) -> Iterator[str]:
+        """
+        Yield the assistant response incrementally.
+
+        Providers that do not support native streaming can override this method.
+        The default implementation yields the full response returned by `generate_response`.
+        """
+        yield self.generate_response(conversation, user_message)

@@ -64,6 +64,24 @@ class TestChatEndpointValidation:
         assert "session_id" in data
         assert data["response"] == "Test response from assistant"
 
+    def test_streams_valid_message(self, client, mock_bedrock_response):
+        """Should support streaming responses when requested."""
+        with client.stream(
+            "POST",
+            "/chat",
+            json={"message": "Hello, streaming?"},
+            headers={"accept": "text/event-stream"},
+        ) as response:
+            assert response.status_code == 200
+            payload = b""
+            for chunk in response.iter_bytes():
+                payload += chunk
+
+        text_payload = payload.decode("utf-8")
+        assert "event: session" in text_payload
+        assert "event: token" in text_payload
+        assert "Test response from assistant" in text_payload
+
     def test_rejects_invalid_session_id(self, client, mock_bedrock_response):
         """Should reject session IDs with invalid characters."""
         response = client.post("/chat", json={

@@ -107,10 +107,23 @@ def mock_bedrock_response(monkeypatch):
             }
         }
 
+    def mock_converse_stream(*args, **kwargs):
+        class _Stream:
+            def __iter__(self_inner):
+                yield {
+                    "contentBlockDelta": {
+                        "delta": [{"text": "Test response from assistant"}]
+                    }
+                }
+                yield {"messageStop": {}}
+
+        return {"stream": _Stream()}
+
     # Only mock if using bedrock
     if os.environ.get("AI_PROVIDER") == "bedrock":
         from app.core.config import bedrock_client
         if bedrock_client:
             monkeypatch.setattr(bedrock_client, "converse", mock_converse)
+            monkeypatch.setattr(bedrock_client, "converse_stream", mock_converse_stream)
 
     return mock_converse

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Dict, List
+from typing import Dict, Iterator, List
 
 try:
     ClientError = getattr(importlib.import_module("botocore.exceptions"), "ClientError")
@@ -87,3 +87,62 @@ class BedrockAIService(AIService):
 
         self._logger.info("ai_request_completed", response_length=len(content))
         return content
+
+    def stream_response(self, conversation: List[Dict], user_message: str) -> Iterator[str]:
+        self._logger.debug("ai_stream_started", history_length=len(conversation))
+        messages = self._build_messages(conversation, user_message)
+
+        try:
+            response = self._client.converse_stream(
+                modelId=BEDROCK_MODEL_ID,
+                messages=messages,
+                inferenceConfig={"maxTokens": 2000, "temperature": 0.7, "topP": 0.9},
+            )
+        except ClientError as exc:
+            error_code = exc.response["Error"].get("Code", "Unknown")
+            self._logger.error("ai_stream_failed", error_code=error_code, detail=str(exc))
+            if error_code == "ValidationException":
+                raise HTTPException(status_code=400, detail="Invalid message format for Bedrock") from exc
+            if error_code == "AccessDeniedException":
+                raise HTTPException(status_code=403, detail="Access denied to Bedrock model") from exc
+            raise HTTPException(status_code=500, detail=f"Bedrock error: {exc}") from exc
+
+        total_length = 0
+        stream = response.get("stream")
+        if stream is None:
+            self._logger.error("ai_stream_missing_stream")
+            raise HTTPException(status_code=500, detail="Bedrock streaming response missing stream iterator.")
+
+        for event in stream:
+            content_delta = []
+
+            if "contentBlockDelta" in event:
+                delta = event["contentBlockDelta"].get("delta", [])
+                for block in delta:
+                    text = block.get("text")
+                    if text:
+                        content_delta.append(text)
+            elif "contentBlock" in event:
+                block = event["contentBlock"].get("content", [])
+                for item in block:
+                    text = item.get("text")
+                    if text:
+                        content_delta.append(text)
+            elif "message" in event:
+                # Full message fallback
+                content = (
+                    event["message"]
+                    .get("content", [{"text": ""}])[0]
+                    .get("text", "")
+                )
+                if content:
+                    content_delta.append(content)
+
+            if not content_delta:
+                continue
+
+            chunk = "".join(content_delta)
+            total_length += len(chunk)
+            yield chunk
+
+        self._logger.info("ai_stream_completed", response_length=total_length)
