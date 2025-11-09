@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Twin from '@/components/twin';
-import { LargeAvatar } from '@/components/avatar';
-import { ThemeToggle } from '@/components/theme-toggle';
+import Twin from "@/components/twin";
+import { LargeAvatar } from "@/components/avatar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function Header() {
   return (
@@ -17,7 +17,8 @@ function Header() {
         Diletta&apos;s Professional Digital Twin
       </p>
       <p className="text-center text-gray-600 dark:text-gray-400 text-base max-w-2xl">
-        Chat with Luna to learn about Diletta&apos;s professional background, experience, and expertise
+        Chat with Luna to learn about Diletta&apos;s professional background,
+        experience, and expertise
       </p>
     </div>
   );
@@ -26,7 +27,9 @@ function Header() {
 function Footer() {
   return (
     <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
-      <p>&copy; {new Date().getFullYear()} Diletta Calussi. All rights reserved.</p>
+      <p>
+        &copy; {new Date().getFullYear()} Diletta Calussi. All rights reserved.
+      </p>
     </footer>
   );
 }

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState } from "react";
+import Image from "next/image";
 
 interface AvatarProps {
   src: string;
@@ -18,16 +18,16 @@ export function Avatar({
   alt,
   size,
   showBadge = false,
-  badgeColor = 'green',
+  badgeColor = "green",
   fallbackText,
-  className = ''
+  className = "",
 }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
 
   const getInitials = () => {
     if (fallbackText) return fallbackText;
     // Extract initials from alt text
-    const words = alt.split(' ');
+    const words = alt.split(" ");
     if (words.length >= 2) {
       return (words[0][0] + words[1][0]).toUpperCase();
     }
@@ -50,18 +50,21 @@ export function Avatar({
             onError={() => setImageError(true)}
           />
         ) : (
-            <div className="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold" style={{ fontSize: size * 0.35 }}>
-              {getInitials()}
-            </div>
+          <div
+            className="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold"
+            style={{ fontSize: size * 0.35 }}
+          >
+            {getInitials()}
+          </div>
         )}
       </div>
       {showBadge && (
         <div
           className={`absolute bottom-0 right-0 rounded-full border-2 border-white`}
           style={{
-            width: size >= 40 ? '14px' : '12px',
-            height: size >= 40 ? '14px' : '12px',
-            backgroundColor: badgeColor === 'green' ? '#10b981' : '#6366f1'
+            width: size >= 40 ? "14px" : "12px",
+            height: size >= 40 ? "14px" : "12px",
+            backgroundColor: badgeColor === "green" ? "#10b981" : "#6366f1",
           }}
         ></div>
       )}
@@ -76,7 +79,12 @@ interface LargeAvatarProps {
   fallbackText?: string;
 }
 
-export function LargeAvatar({ src, alt, showBadge = true, fallbackText = 'DT' }: LargeAvatarProps) {
+export function LargeAvatar({
+  src,
+  alt,
+  showBadge = true,
+  fallbackText = "DT",
+}: LargeAvatarProps) {
   const [imageError, setImageError] = useState(false);
 
   return (

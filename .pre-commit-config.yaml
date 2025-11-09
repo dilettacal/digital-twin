@@ -1,3 +1,5 @@
+exclude: ^(node_modules/|frontend/node_modules/|\.venv/|backend/\.venv/|\.env(\..*)?$|backend/\.env(\..*)?$)
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -16,3 +18,64 @@ repos:
         files: ^backend/.*\.py$
         args:
           - -ll
+  - repo: local
+    hooks:
+      - id: codeql-scan
+        name: codeql-python-security
+        entry: scripts/run-codeql.sh
+        language: system
+        pass_filenames: false
+        stages: [manual]
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: prettier-frontend
+        files: ^frontend/.*\.(js|jsx|ts|tsx|json|css|scss|html|md|yaml|yml)$
+
+  - repo: local
+    hooks:
+      - id: npm-audit
+        name: npm-audit
+        entry: bash
+        language: system
+        args:
+          - -c
+          - cd frontend && npm audit --audit-level=moderate
+        pass_filenames: false
+        always_run: true
+        files: ^frontend/
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint-frontend
+        entry: npx eslint --config frontend/eslint.config.mjs --max-warnings=0
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        files: ^frontend/(src|pages|components|app)/
+        pass_filenames: true
+        working_dir: frontend
+
+
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        name: lint-bash
+        files: ^(scripts/|backend/|frontend/).*\.sh$
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.10.0-1
+    hooks:
+      - id: shfmt
+        name: format-bash
+        files: ^(scripts/|backend/|frontend/).*\.sh$
+        args: ["-i", "2", "-ci"]  # 2-space indent, indent case statements
+
+      - id: shfmt
+        name: format-bash
+        files: ^(scripts/|backend/|frontend/).*\.sh$
+        args: ["-i", "2", "-ci"]  # 2-space indent, indent case statements
