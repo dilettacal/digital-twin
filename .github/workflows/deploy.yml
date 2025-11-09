@@ -63,32 +63,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Download encrypted data bundle
-        if: github.event.inputs.use_local_data != 'true'
-        run: |
-          chmod +x scripts/download-encrypted-data.sh
-          ./scripts/download-encrypted-data.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
-          PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
-          DEPLOY_QUIET: 'true'
-
-      - name: Decrypt data files
-        if: github.event.inputs.use_local_data != 'true'
-        run: |
-          chmod +x scripts/decrypt-data.sh
-          ./scripts/decrypt-data.sh
-        env:
-          DATA_KEY: ${{ secrets.DATA_KEY }}
-          DEPLOY_QUIET: 'true'
-      
-      - name: Upload personal data to S3
-        run: |
-          chmod +x scripts/upload-personal-data.sh
-          ./scripts/upload-personal-data.sh ${{ github.event.inputs.environment || 'dev' }}
-        env:
-          DEPLOY_QUIET: 'true'
-
       - name: Run Deployment Script
         run: |
           # Set environment variables for the script

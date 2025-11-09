@@ -4,13 +4,14 @@ set -euo pipefail
 # Show usage if --help is requested
 if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
   cat << 'EOF'
-Usage: ./scripts/deploy.sh [--use-local] [--verbose] [ENVIRONMENT] [PROJECT_NAME]
+Usage: ./scripts/deploy.sh [--use-local] [--verbose] [--skip-data] [ENVIRONMENT] [PROJECT_NAME]
 
 Deploy the Digital Twin application to AWS.
 
 Options:
   --use-local       Use local data files instead of downloading from private repo
   --verbose         Show detailed command output (Terraform plan, npm, s3 sync)
+  --skip-data       Skip data download/decrypt/upload steps (useful if already run)
   ENVIRONMENT       Deployment environment (dev|test|prod) [default: dev]
   PROJECT_NAME      Project name [default: digital-twin]
 
@@ -30,6 +31,7 @@ fi
 # Parse arguments
 USE_LOCAL=false
 VERBOSE=false
+SKIP_DATA=false
 ENVIRONMENT=""
 PROJECT_NAME=""
 
@@ -42,6 +44,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --verbose|-v)
       VERBOSE=true
+      shift
+      ;;
+    --skip-data)
+      SKIP_DATA=true
       shift
       ;;
     *)
@@ -98,40 +104,44 @@ log ""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-if [ "$USE_LOCAL" = true ]; then
-  log "📂 Using local data files..."
-  if [ ! -d "$PROJECT_ROOT/backend/data/personal_data" ] || [ -z "$(ls -A $PROJECT_ROOT/backend/data/personal_data 2>/dev/null)" ]; then
-    announce "⚠️  Warning: No personal data found in backend/data/personal_data/"
-    announce "   Run './scripts/setup-local-data.sh' to copy templates or add your own files"
-    read -p "Continue anyway? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      exit 1
-    fi
-  fi
+if [ "$SKIP_DATA" = true ]; then
+  log "⏩ Skipping data download/decrypt/upload (already handled)."
 else
-  announce "📥 Step 1: Download encrypted data..."
-  if [ -f "$SCRIPT_DIR/download-encrypted-data.sh" ]; then
-    "$SCRIPT_DIR/download-encrypted-data.sh"
+  if [ "$USE_LOCAL" = true ]; then
+    log "📂 Using local data files..."
+    if [ ! -d "$PROJECT_ROOT/backend/data/personal_data" ] || [ -z "$(ls -A $PROJECT_ROOT/backend/data/personal_data 2>/dev/null)" ]; then
+      announce "⚠️  Warning: No personal data found in backend/data/personal_data/"
+      announce "   Run './scripts/setup-local-data.sh' to copy templates or add your own files"
+      read -p "Continue anyway? (y/n) " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+      fi
+    fi
   else
-    announce "⚠️  Warning: download-encrypted-data.sh not found, skipping..."
+    announce "📥 Step 1: Download encrypted data..."
+    if [ -f "$SCRIPT_DIR/download-encrypted-data.sh" ]; then
+      "$SCRIPT_DIR/download-encrypted-data.sh"
+    else
+      announce "⚠️  Warning: download-encrypted-data.sh not found, skipping..."
+    fi
+    
+    log ""
+    announce "🔓 Step 2: Decrypt data..."
+    if [ -f "$SCRIPT_DIR/decrypt-data.sh" ]; then
+      "$SCRIPT_DIR/decrypt-data.sh"
+    else
+      announce "⚠️  Warning: decrypt-data.sh not found, skipping..."
+    fi
   fi
   
   log ""
-  announce "🔓 Step 2: Decrypt data..."
-  if [ -f "$SCRIPT_DIR/decrypt-data.sh" ]; then
-    "$SCRIPT_DIR/decrypt-data.sh"
+  announce "☁️  Step 3: Upload data to S3..."
+  if [ -f "$SCRIPT_DIR/upload-personal-data.sh" ]; then
+    "$SCRIPT_DIR/upload-personal-data.sh" "$ENVIRONMENT" "$PROJECT_NAME"
   else
-    announce "⚠️  Warning: decrypt-data.sh not found, skipping..."
+    announce "⚠️  Warning: upload-personal-data.sh not found, skipping..."
   fi
-fi
-
-log ""
-announce "☁️  Step 3: Upload data to S3..."
-if [ -f "$SCRIPT_DIR/upload-personal-data.sh" ]; then
-  "$SCRIPT_DIR/upload-personal-data.sh" "$ENVIRONMENT" "$PROJECT_NAME"
-else
-  announce "⚠️  Warning: upload-personal-data.sh not found, skipping..."
 fi
 
 log ""
