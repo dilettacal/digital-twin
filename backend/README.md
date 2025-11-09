@@ -23,6 +23,7 @@ backend/
 │       ├── ai/            # AI provider integrations
 │       │   ├── base.py
 │       │   ├── bedrock.py
+│       │   ├── ollama.py
 │       │   └── openai.py
 │       └── memory/        # Conversation storage backends
 │           ├── base.py
@@ -93,7 +94,18 @@ uv run python deploy.py
 
 - ✅ Rate limiting (per-request and cooldown)
 - ✅ Input validation and security filtering
-- ✅ Multi-provider AI support (Bedrock/OpenAI)
+- ✅ Multi-provider AI support (Local: ollama, openai. Cloud: Bedrock")
 - ✅ Conversation memory (local/S3)
 - ✅ Comprehensive test suite (48 tests)
 - ✅ Clean architecture with separation of concerns
+
+## Ollama Usage
+
+- Install Ollama locally (macOS/Linux): follow the [Ollama docs](https://ollama.com/download).
+- Set `AI_PROVIDER=ollama` and `OLLAMA_MODEL=<model_name>` in your environment (e.g. `.env`), then ensure the Ollama daemon is running (`ollama serve`) before starting the backend.
+
+
+## OpenAI Usage
+- Make sure to create an API Key from the OPENAI Developer Plattform.
+- Add the key to your `.env` file.
+- Set `AI_PROVIDER=openai`, `OPENAI_API_KEY=sk-your-openai-api-key-here` and `OPENAI_MODEL=<model_name>`

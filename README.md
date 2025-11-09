@@ -19,14 +19,11 @@ When someone asks a question, the AI references your personal data to craft resp
 
 ### Current Setup (Separate Private Repo)
 
-This project is currently configured to keep personal data separate from the main codebase. Personal data is stored in a private repository and encrypted for deployment. This approach:
-- ✅ Keeps the main project public-friendly
-- ✅ Separates sensitive personal information
-- ✅ Works with automated CI/CD deployments
+This project is currently configured to keep personal data separate from the main codebase. Personal data is stored in a private repository and encrypted for deployment.
 
 ### Alternative: Local Data Approach
 
-A simpler local approach by committing data directly can also be used:
+A simpler local approach by committing personal data to `backend/data` directory:
 
 1. **Copy the templates** from `backend/data/personal_data_templates/` to `backend/data/personal_data/`
 2. **Edit the files** with your actual information:
