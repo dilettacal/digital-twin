@@ -67,26 +67,24 @@ def main():
             import boto3
             s3 = boto3.client('s3')
             
-            # Download personal data files from S3
-            files_to_download = [
-                "summary.txt",
-                "linkedin.pdf",
-                "facts.json",
-                "style.txt",
-                "me.txt",
-                "skills.yml",
-                "education.yml",
-                "experience.yml",
-                "qna.yml",
-                "sources.json",
-                "resume.md",
-            ]
-            for file_name in files_to_download:
-                try:
-                    s3.download_file(personal_data_bucket, file_name, os.path.join(lambda_personal_data_dir, file_name))
-                    print(f"✅ Downloaded {file_name} from S3")
-                except Exception as e:
-                    print(f"⚠️  Warning: Could not download {file_name} from S3: {e}")
+            # Download personal data files from S3 (under personal_data/ prefix)
+            print("📥 Downloading personal data files from S3...")
+            paginator = s3.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=personal_data_bucket, Prefix="personal_data/"):
+                for obj in page.get("Contents", []):
+                    key = obj["Key"]
+                    if key.endswith("/"):
+                        continue
+                    relative_path = key[len("personal_data/"):]
+                    if not relative_path:
+                        continue
+                    destination_path = os.path.join(lambda_personal_data_dir, relative_path)
+                    os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+                    try:
+                        s3.download_file(personal_data_bucket, key, destination_path)
+                        print(f"✅ Downloaded {relative_path} from S3")
+                    except Exception as e:
+                        print(f"⚠️  Warning: Could not download {key} from S3: {e}")
 
             # Download prompts directory from S3 (prefix: prompts/)
             print("📥 Downloading prompts from S3...")

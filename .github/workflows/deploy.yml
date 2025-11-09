@@ -72,6 +72,13 @@ jobs:
           ./scripts/decrypt-data.sh
         env:
           DATA_KEY: ${{ secrets.DATA_KEY }}
+      - name: Upload personal data to S3
+        run: |
+          chmod +x scripts/upload-personal-data.sh
+          ./scripts/upload-personal-data.sh ${{ github.event.inputs.environment || 'dev' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Run Deployment Script
         run: |

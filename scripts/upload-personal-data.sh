@@ -13,6 +13,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 DATA_DIR="${PROJECT_ROOT}/backend/data/personal_data"
 PROMPTS_DIR="${PROJECT_ROOT}/backend/data/prompts"
+PERSONAL_DATA_S3_PREFIX="personal_data"
+PROMPTS_S3_PREFIX="prompts"
 
 log() {
   echo "$(date +'%Y-%m-%dT%H:%M:%S%z') | $*"
@@ -75,8 +77,8 @@ upload_file() {
   fi
 
   if [ -f "${DATA_DIR}/${src}" ]; then
-    aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${key}" --region "${AWS_REGION}"
-    log "✅ Uploaded ${src}"
+    aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}"
+    log "✅ Uploaded ${src} to ${PERSONAL_DATA_S3_PREFIX}/${key}"
   elif [ "${required}" = "true" ]; then
     log "❌ Error: required file ${src} not found"
     missing_required=1
@@ -95,7 +97,11 @@ upload_directory() {
   fi
 
   if [ -d "${DATA_DIR}/${dir}" ]; then
-    aws s3 sync "${DATA_DIR}/${dir}/" "${S3_URI}/${key_prefix}/" --delete --region "${AWS_REGION}" --exclude "*_template*"
+    local destination_prefix="${S3_URI}/${key_prefix}/"
+    if [ -n "${PERSONAL_DATA_S3_PREFIX}" ]; then
+      destination_prefix="${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key_prefix}/"
+    fi
+    aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*"
     log "✅ Synced ${dir}/"
   else
     log "⚠️  Warning: directory ${dir}/ not found"
@@ -135,7 +141,7 @@ done
 
 if [ -d "${PROMPTS_DIR}" ]; then
   log "📚 Syncing prompts directory..."
-  aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/prompts/" --delete --region "${AWS_REGION}"
+  aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}"
   log "✅ Synced prompts/"
 else
   log "⚠️  Warning: prompts directory not found at ${PROMPTS_DIR}"
