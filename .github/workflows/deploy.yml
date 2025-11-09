@@ -96,6 +96,9 @@ jobs:
           ./scripts/deploy.sh ${{ github.event.inputs.environment || 'dev' }}
         env:
           AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
+          PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
+          DATA_KEY: ${{ secrets.DATA_KEY }}
           
       - name: Get Deployment URLs
         id: deploy_outputs
