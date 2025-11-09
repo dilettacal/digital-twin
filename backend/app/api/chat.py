@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request
 from app.models import ChatRequest, ChatResponse
 from app.services.memory import get_memory_service
-from app.services.ai_service import get_ai_response
+from app.services.ai import get_ai_service
 from app.core.rate_limiter import rate_limiter, get_client_identifier
 from app.core.auth import get_current_user
 from app.core.config import (
@@ -18,6 +18,7 @@ from app.core.logging import get_logger
 router = APIRouter()
 logger = get_logger(__name__)
 memory_service = get_memory_service()
+ai_service = get_ai_service()
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -58,7 +59,7 @@ async def chat(request: ChatRequest, http_request: Request):
 
         conversation = memory_service.load_conversation(session_id)
 
-        assistant_response = get_ai_response(conversation, request.message)
+        assistant_response = ai_service.generate_response(conversation, request.message)
 
         conversation.append(
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}

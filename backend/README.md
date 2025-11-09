@@ -20,8 +20,15 @@ backend/
 │   │   └── resources.py   # Data resources
 │   └── services/          # Business logic
 │       ├── __init__.py
-│       ├── ai_service.py  # AI provider integration
-│       └── memory_service.py # Conversation storage
+│       ├── ai/            # AI provider integrations
+│       │   ├── base.py
+│       │   ├── bedrock.py
+│       │   └── openai.py
+│       └── memory/        # Conversation storage backends
+│           ├── base.py
+│           ├── local.py
+│           ├── s3.py
+│           └── utils.py
 ├── data/                  # Personal data & prompts
 │   ├── prompts/          # AI prompt templates
 │   │   ├── system_prompt.txt
