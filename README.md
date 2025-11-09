@@ -43,14 +43,37 @@ A simpler local approach by committing data directly can also be used:
 ./scripts/setup-local-data.sh
 ```
 
-## Getting Started
+📖 For detailed information about data files, formats, and the data loader system, see the **[Data Guide](backend/data/DATA_ARCHITECTURE.md)**.
+
+## Customization
+
+### Avatar
+
+To use your own avatar image:
+
+1. Replace the avatar file in `frontend/public/avatar.png` with your own image
+2. Recommended size: 200x200px or larger (square aspect ratio)
+3. Supported formats: PNG, JPG, or any web-compatible image format
+
+The avatar will automatically appear in the chat interface.
+
+### Personalize Names and Text
+
+Edit `frontend/app/page.tsx` to customize:
+- Digital twin name (default: "Luna")
+- Your name and title
+- Header and footer text
+
+## Getting Started - Local Development
+
+⚠️ **Cost Warning**: Local development using OpenAI will incur API costs based on your usage. OpenAI charges per token (input/output). Monitor your usage at [OpenAI's usage dashboard](https://platform.openai.com/usage). Alternatively, you can use AWS Bedrock which also has associated costs.
 
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- AWS credentials (for deployment)
+- OpenAI API key (or AWS credentials for Bedrock)
 
-### Local Development
+### Setup Steps
 
 1. **Install dependencies**:
 ```bash
@@ -91,21 +114,49 @@ npm run dev
 ```
 Frontend runs on `http://localhost:3000`
 
-## Deployment
+### Test Your Local Setup
 
-Deploy to AWS using Terraform:
+1. Open your browser to `http://localhost:3000`
+2. You should see the chat interface with your avatar
+3. Start chatting with your digital twin!
 
+---
+
+## Cloud Deployment
+
+⚠️ **Cost Warning**: Deploying to AWS will incur cloud infrastructure costs that are your responsibility. See the **[Cost Disclaimer](docs/DEPLOYMENT.md#️-cost-disclaimer)** section in the deployment guide for details.
+
+Willing to deploy to AWS? See the **[Cloud Deployment Guide](docs/DEPLOYMENT.md)** for instructions. Once setup:
+
+**Quick deploy:**
 ```bash
-./scripts/deploy.sh prod
+./scripts/deploy.sh dev
 ```
 
-This creates:
-- Lambda function for the backend
-- S3 + CloudFront for the frontend
-- API Gateway for HTTP endpoints
-- S3 buckets for data storage
+---
 
-For detailed deployment instructions, see [Technical Documentation](docs/README.md).
+## Project Structure
+
+```
+digital-twin/
+├── backend/           # FastAPI backend
+│   ├── app/          # Application code
+│   ├── data/         # Personal data and prompts
+│   └── tests/        # Backend tests
+├── frontend/         # Next.js frontend
+│   ├── app/          # Next.js app directory
+│   └── components/   # React components
+├── terraform/        # Infrastructure as Code
+├── scripts/          # Deployment and utility scripts
+└── docs/            # Documentation
+```
+
+
+---
+
+## License
+
+See [LICENSE](LICENSE) file for details.
 
 ---
 

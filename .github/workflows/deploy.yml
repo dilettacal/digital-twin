@@ -14,6 +14,11 @@ on:
           - dev
           - test
           - prod
+      use_local_data:
+        description: 'Use local data instead of encrypted private repo'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -59,6 +64,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Download encrypted data bundle
+        if: github.event.inputs.use_local_data != 'true'
         run: |
           chmod +x scripts/download-encrypted-data.sh
           ./scripts/download-encrypted-data.sh
@@ -67,11 +73,13 @@ jobs:
           PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
 
       - name: Decrypt data files
+        if: github.event.inputs.use_local_data != 'true'
         run: |
           chmod +x scripts/decrypt-data.sh
           ./scripts/decrypt-data.sh
         env:
           DATA_KEY: ${{ secrets.DATA_KEY }}
+      
       - name: Upload personal data to S3
         run: |
           chmod +x scripts/upload-personal-data.sh
@@ -88,8 +96,6 @@ jobs:
           ./scripts/deploy.sh ${{ github.event.inputs.environment || 'dev' }}
         env:
           AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           
       - name: Get Deployment URLs
         id: deploy_outputs
@@ -117,5 +123,5 @@ jobs:
           echo "✅ Deployment Complete!"
           echo "🌐 CloudFront URL: ${{ steps.deploy_outputs.outputs.cloudfront_url }}"
           echo ""
-          echo "ℹ️  Internal endpoints (API Gateway, S3 buckets) are configured."
-          echo "   Check Terraform outputs or AWS Console if needed."
+          echo "🔒 Security Note: API Gateway URL is not displayed publicly."
+          echo "   Access Terraform outputs directly if you need the API URL for debugging."
