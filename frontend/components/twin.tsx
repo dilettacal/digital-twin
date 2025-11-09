@@ -29,24 +29,41 @@ export default function Twin() {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
+    const timestamp = Date.now();
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: timestamp.toString(),
       role: "user",
       content: input,
       timestamp: new Date(),
     };
+    const assistantMessageId = `${timestamp}-assistant`;
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
+      const updateAssistantContent = (content: string) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId ? { ...msg, content } : msg,
+          ),
+        );
+      };
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "text/event-stream",
           },
           body: JSON.stringify({
             message: input,
@@ -86,38 +103,137 @@ export default function Twin() {
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") || "";
 
-      if (!sessionId) {
-        setSessionId(data.session_id);
+      if (!contentType.includes("text/event-stream")) {
+        const data = await response.json();
+
+        if (data.session_id) {
+          setSessionId((prev) => prev || data.session_id);
+        }
+
+        updateAssistantContent(data.response);
+        return;
       }
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.response,
-        timestamp: new Date(),
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("⚠️ Streaming is not supported in this browser.");
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulated = "";
+      let streamError: string | null = null;
+      let doneReceived = false;
+
+      const processEvent = (rawEvent: string) => {
+        if (!rawEvent.trim()) return;
+
+        const lines = rawEvent.split("\n");
+        let eventName = "message";
+        let dataPayload = "";
+
+        for (const line of lines) {
+          if (line.startsWith("event:")) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataPayload += line.slice(5).trim();
+          }
+        }
+
+        if (!dataPayload) return;
+
+        let parsed;
+        try {
+          parsed = JSON.parse(dataPayload);
+        } catch (error) {
+          console.error("Failed to parse SSE data", error);
+          return;
+        }
+
+        switch (eventName) {
+          case "session": {
+            if (parsed.session_id) {
+              setSessionId((prev) => prev || parsed.session_id);
+            }
+            break;
+          }
+          case "token": {
+            if (typeof parsed.delta === "string" && parsed.delta.length > 0) {
+              accumulated += parsed.delta;
+              updateAssistantContent(accumulated);
+            }
+            break;
+          }
+          case "done": {
+            if (typeof parsed.response === "string") {
+              accumulated = parsed.response;
+              updateAssistantContent(parsed.response);
+            }
+            doneReceived = true;
+            break;
+          }
+          case "error": {
+            const detail =
+              typeof parsed.detail === "string"
+                ? parsed.detail
+                : "⚠️ Streaming error occurred.";
+            streamError = detail;
+            updateAssistantContent(detail);
+            doneReceived = true;
+            break;
+          }
+          default:
+            break;
+        }
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      while (!doneReceived) {
+        const { value, done } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+
+        let delimiterIndex = buffer.indexOf("\n\n");
+        while (delimiterIndex !== -1) {
+          const rawEvent = buffer.slice(0, delimiterIndex);
+          buffer = buffer.slice(delimiterIndex + 2);
+          processEvent(rawEvent);
+
+          if (doneReceived) {
+            break;
+          }
+
+          delimiterIndex = buffer.indexOf("\n\n");
+        }
+      }
+
+      if (!doneReceived && accumulated.length > 0) {
+        updateAssistantContent(accumulated);
+      }
+
+      if (streamError) {
+        throw new Error(streamError);
+      }
     } catch (error) {
       console.error("Error:", error);
 
-      // Get error message
       let errorMessage = "⚠️ Sorry, I encountered an error. Please try again.";
       if (error instanceof Error) {
         console.error("Error details:", error.message);
         errorMessage = error.message;
       }
 
-      // Add error message
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: errorMessage,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: errorMessage }
+            : msg,
+        ),
+      );
     } finally {
       setIsLoading(false);
     }
