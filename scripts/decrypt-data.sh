@@ -15,8 +15,12 @@ PROMPTS_DIR="$TWIN_DIR/backend/data/prompts"
 # Load .env file first (before checking for DATA_KEY)
 # Try multiple .env locations
 if [ -f "$TWIN_DIR/backend/.env" ]; then
+    # shellcheck source=../backend/.env
+    # shellcheck disable=SC1091
     source "$TWIN_DIR/backend/.env"
 elif [ -f "$TWIN_DIR/.env" ]; then
+    # shellcheck source=../.env
+    # shellcheck disable=SC1091
     source "$TWIN_DIR/.env"
 fi
 
@@ -78,7 +82,7 @@ UPDATED_PROMPTS=false
 
 set +e  # allow loop to continue on individual failures
 while IFS= read -r -d '' encrypted_file; do
-    relative_path="${encrypted_file#$ENCRYPTED_PERSONAL_DATA_DIR/}"
+    relative_path="${encrypted_file#"$ENCRYPTED_PERSONAL_DATA_DIR"/}"
     relative_path="${relative_path%.encrypted}"
     output_file="$DATA_DIR/$relative_path"
 
@@ -110,7 +114,7 @@ if [ -d "$ENCRYPTED_PROMPTS_DIR" ]; then
     log "📚 Decrypting prompt files..."
     if [ -n "$(find "$ENCRYPTED_PROMPTS_DIR" -type f -name '*.encrypted' 2>/dev/null)" ]; then
         while IFS= read -r -d '' encrypted_prompt; do
-            relative_path="${encrypted_prompt#$ENCRYPTED_PROMPTS_DIR/}"
+            relative_path="${encrypted_prompt#"$ENCRYPTED_PROMPTS_DIR"/}"
             relative_path="${relative_path%.encrypted}"
             output_file="$PROMPTS_DIR/$relative_path"
 
