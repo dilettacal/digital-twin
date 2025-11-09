@@ -109,7 +109,7 @@ if [ "$SKIP_DATA" = true ]; then
 else
   if [ "$USE_LOCAL" = true ]; then
     log "📂 Using local data files..."
-    if [ ! -d "$PROJECT_ROOT/backend/data/personal_data" ] || [ -z "$(ls -A $PROJECT_ROOT/backend/data/personal_data 2>/dev/null)" ]; then
+    if [ ! -d "$PROJECT_ROOT/backend/data/personal_data" ] || [ -z "$(ls -A "$PROJECT_ROOT"/backend/data/personal_data 2>/dev/null)" ]; then
       announce "⚠️  Warning: No personal data found in backend/data/personal_data/"
       announce "   Run './scripts/setup-local-data.sh' to copy templates or add your own files"
       read -p "Continue anyway? (y/n) " -n 1 -r

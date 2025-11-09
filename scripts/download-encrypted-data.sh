@@ -11,8 +11,12 @@ DOWNLOAD_DIR="$TWIN_DIR/backend/data-encrypted-download"
 # Configuration
 # Try to load from .env first
 if [ -f "$TWIN_DIR/backend/.env" ]; then
+    # shellcheck source=../backend/.env
+    # shellcheck disable=SC1091
     source "$TWIN_DIR/backend/.env"
 elif [ -f "$TWIN_DIR/.env" ]; then
+    # shellcheck source=../.env
+    # shellcheck disable=SC1091
     source "$TWIN_DIR/.env"
 fi
 
@@ -47,9 +51,13 @@ log ""
 if [ -z "$GITHUB_TOKEN" ]; then
     # Try multiple .env locations
     if [ -f "$TWIN_DIR/backend/.env" ]; then
+        # shellcheck source=../backend/.env
+        # shellcheck disable=SC1091
         source "$TWIN_DIR/backend/.env"
         GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_PAT:-}}"
     elif [ -f "$TWIN_DIR/.env" ]; then
+        # shellcheck source=../.env
+        # shellcheck disable=SC1091
         source "$TWIN_DIR/.env"
         GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_PAT:-}}"
     fi
@@ -142,7 +150,7 @@ elif command -v curl &> /dev/null && command -v jq &> /dev/null; then
     fi
 
     # Download the zip file
-    log "Downloading: $(basename $ZIP_URL)"
+    log "Downloading: $(basename "$ZIP_URL")"
     if [ -n "$GITHUB_TOKEN" ]; then
         curl -L -H "Authorization: token $GITHUB_TOKEN" "$ZIP_URL" -o "$DOWNLOAD_DIR/data-encrypted.zip"
     else

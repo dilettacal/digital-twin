@@ -70,7 +70,16 @@ if [ ${#FILES_TO_CREATE[@]} -eq 0 ]; then
     echo "✅ All required data files already exist in $DATA_DIR"
     echo ""
     echo "Files found:"
-    ls -1 "$DATA_DIR"/*.{json,txt,pdf} 2>/dev/null | xargs -n1 basename || echo "  (none)"
+    mapfile -d '' files < <(find "$DATA_DIR" -maxdepth 1 -type f \( -name '*.json' -o -name '*.txt' -o -name '*.pdf' \) -print0)
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "  (none)"
+    else
+        for file_path in "${files[@]}"; do
+            # mapfile retains delimiters; trim trailing nulls
+            sanitized_path="${file_path%$'\0'}"
+            echo "  $(basename "$sanitized_path")"
+        done
+    fi
 fi
 
 for template in "${PROMPT_TEMPLATES[@]}"; do

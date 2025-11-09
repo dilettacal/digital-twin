@@ -51,12 +51,11 @@ repos:
     hooks:
       - id: eslint
         name: eslint-frontend
-        entry: npx eslint --config frontend/eslint.config.mjs --max-warnings=0
+        entry: ./scripts/run-frontend-eslint.sh
         language: system
         types_or: [javascript, jsx, ts, tsx]
         files: ^frontend/(src|pages|components|app)/
         pass_filenames: true
-        working_dir: frontend
 
 
 
