@@ -71,6 +71,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
           PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
+          DEPLOY_QUIET: 'true'
 
       - name: Decrypt data files
         if: github.event.inputs.use_local_data != 'true'
@@ -79,11 +80,14 @@ jobs:
           ./scripts/decrypt-data.sh
         env:
           DATA_KEY: ${{ secrets.DATA_KEY }}
+          DEPLOY_QUIET: 'true'
       
       - name: Upload personal data to S3
         run: |
           chmod +x scripts/upload-personal-data.sh
           ./scripts/upload-personal-data.sh ${{ github.event.inputs.environment || 'dev' }}
+        env:
+          DEPLOY_QUIET: 'true'
 
       - name: Run Deployment Script
         run: |

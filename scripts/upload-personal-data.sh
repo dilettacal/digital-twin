@@ -89,7 +89,11 @@ upload_file() {
   fi
 
   if [ -f "${DATA_DIR}/${src}" ]; then
-    aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}" $( [ "$quiet" = true ] && echo "--only-show-errors" )
+    if [ "$quiet" = true ]; then
+      aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}" --only-show-errors --quiet >/dev/null
+    else
+      aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}"
+    fi
     log "✅ Uploaded ${src} to ${PERSONAL_DATA_S3_PREFIX}/${key}"
   elif [ "${required}" = "true" ]; then
     log "❌ Error: required file ${src} not found"
@@ -114,7 +118,7 @@ upload_directory() {
       destination_prefix="${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key_prefix}/"
     fi
     if [ "$quiet" = true ]; then
-      aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*" --only-show-errors --no-progress
+      aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*" --only-show-errors --no-progress >/dev/null
     else
       aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*"
     fi
@@ -158,7 +162,7 @@ done
 if [ -d "${PROMPTS_DIR}" ]; then
   log "📚 Syncing prompts directory..."
   if [ "$quiet" = true ]; then
-    aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}" --only-show-errors --no-progress
+    aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}" --only-show-errors --no-progress >/dev/null
   else
     aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}"
   fi

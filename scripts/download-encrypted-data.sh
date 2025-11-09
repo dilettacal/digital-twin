@@ -20,6 +20,10 @@ PRIVATE_REPO_NAME="${PRIVATE_REPO_NAME:-dilettacal/friendly-waffle-data}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_PAT:-}}"
 
 quiet="${DEPLOY_QUIET:-false}"
+SAFE_REPO_NAME="$PRIVATE_REPO_NAME"
+if [ "$quiet" = true ]; then
+    SAFE_REPO_NAME="***"
+fi
 
 log() {
     local message="$*"
@@ -36,7 +40,7 @@ log() {
 }
 
 log "📥 Downloading encrypted data files from GitHub Release..."
-log "   Repository: $PRIVATE_REPO_NAME"
+log "   Repository: $SAFE_REPO_NAME"
 log ""
 
 # Check for GitHub token (needed for private repos)
@@ -88,7 +92,7 @@ if command -v gh &> /dev/null; then
     LATEST_RELEASE=$(gh release list --repo "$PRIVATE_REPO_NAME" --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
     
     if [ -z "$LATEST_RELEASE" ]; then
-        log "❌ Error: No releases found in repository $PRIVATE_REPO_NAME"
+        log "❌ Error: No releases found in repository $SAFE_REPO_NAME"
         log "   Make sure the repository exists and has at least one release."
         exit 1
     fi
