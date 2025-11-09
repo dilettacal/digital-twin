@@ -30,7 +30,7 @@ def test_safe_join_prevents_traversal(tmp_path: Path):
 
 def test_local_memory_service_round_trip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     memory_dir = tmp_path / "memory"
-    monkeypatch.setattr("app.services.memory.local.MEMORY_DIR", memory_dir.as_posix(), raising=False)
+    monkeypatch.setattr("app.services.memory.local.HISTORY_DIR", memory_dir.as_posix(), raising=False)
 
     service = LocalMemoryService()
     session_id = "test-session"

@@ -33,7 +33,7 @@ lambda-deployment.zip
 lambda-package/
 
 # Memory/data
-../memory/
+../history/
 /tmp/
 
 # Personal data (ignore contents, keep placeholder)

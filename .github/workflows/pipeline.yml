@@ -1,0 +1,42 @@
+name: CI Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      use_local_data:
+        description: 'Use local data instead of encrypted private repo'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  run-tests:
+    name: Run Testing Workflow
+    uses: ./.github/workflows/testing.yml
+    secrets: inherit
+
+  deploy:
+    name: Run Deploy Workflow
+    needs: run-tests
+    if: ${{ needs.run-tests.result == 'success' }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.environment) || 'dev' }}
+      use_local_data: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.use_local_data) || false }}
+    secrets: inherit

@@ -233,8 +233,8 @@ backend/data/personal_data/*
 backend/data-encrypted/
 backend/data-encrypted-download/
 
-# Conversation memory (local development)
-memory/
+# Conversation history (local development)
+history/
 
 # Environment variables (encryption keys, tokens)
 .env

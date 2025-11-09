@@ -64,7 +64,7 @@ def setup_test_environment():
     os.environ["AI_PROVIDER"] = "bedrock"
     os.environ["BEDROCK_MODEL_ID"] = "test-model"
     os.environ["USE_S3"] = "false"
-    os.environ["MEMORY_DIR"] = "/tmp/test-memory"
+    os.environ["HISTORY_DIR"] = "/tmp/test-memory"
     os.environ["CORS_ORIGINS"] = "http://localhost:3000"
 
     # Rate limiting configuration for tests
