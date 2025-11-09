@@ -209,13 +209,25 @@ __marimo__/
 
 
 # Personal Files
-# Ignore all files in backend/data/ except templates
+# Ignore all files in backend/data/ except templates and placeholder files
 backend/data/*
 !backend/data/
+
+# Prompts (ignore contents, keep placeholder)
+backend/data/prompts/*
 !backend/data/prompts/
-!backend/data/prompts/**
-!backend/data/*_template.*
-!backend/data/*_template
+!backend/data/prompts/__init__.py
+
+# Personal data (ignore contents, keep placeholder)
+backend/data/personal_data/*
+!backend/data/personal_data/
+!backend/data/personal_data/__init__.py
+
+# Template directories (tracked)
+!backend/data/personal_data_templates/
+!backend/data/personal_data_templates/**
+!backend/data/prompts_template/
+!backend/data/prompts_template/**
 
 # Encrypted files (downloaded from releases)
 backend/data-encrypted/

@@ -1,0 +1,53 @@
+name: Testing
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Download encrypted data bundle
+        run: |
+          chmod +x scripts/download-encrypted-data.sh
+          ./scripts/download-encrypted-data.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_DATA_PAT }}
+          PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
+
+      - name: Decrypt data files
+        run: |
+          chmod +x scripts/decrypt-data.sh
+          ./scripts/decrypt-data.sh
+        env:
+          DATA_KEY: ${{ secrets.DATA_KEY }}
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          uv sync --frozen
+
+      - name: Run pytest
+        working-directory: backend
+        run: |
+          uv run pytest

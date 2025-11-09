@@ -12,9 +12,20 @@ from app.core.config import (
     RATE_LIMIT_WINDOW_SECONDS,
     RATE_LIMIT_COOLDOWN_SECONDS
 )
+from app.core.logging import configure_logging, get_logger
+
+configure_logging()
+logger = get_logger(__name__)
 
 # Create FastAPI app
 app = FastAPI(title="Digital Twin API")
+
+logger.info(
+    "application_initialized",
+    cors_origins=CORS_ORIGINS,
+    use_s3=USE_S3,
+    ai_provider=AI_PROVIDER,
+)
 
 # Configure CORS
 app.add_middleware(

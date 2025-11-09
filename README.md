@@ -71,7 +71,7 @@ npm run dev
 - Frontend runs on `http://localhost:3000`
 - Requires `NEXT_PUBLIC_API_URL` environment variable (defaults to `http://localhost:8000`)
 
-**Note**: Make sure you have your personal data files in `backend/data/` before starting (run `./scripts/setup.sh` if needed).
+**Note**: Make sure you have your personal data files in `backend/data/personal_data/` before starting (run `./scripts/setup-local-data.sh` if needed).
 
 ---
 
@@ -84,19 +84,19 @@ npm run dev
 **Quick Setup:**
 ```bash
 # Run the setup script
-./scripts/setup.sh
+./scripts/setup-local-data.sh
 ```
 
 The setup script will automatically:
-- Copy template files from `backend/data/*_template.*` to create data files
+- Copy template files from `backend/data/personal_data_templates/*_template.*` to create data files
 - Create all required files for local development
 - Skip files that already exist
 
-**Note**: Personal data files should be placed in `backend/data/` directory.
+**Note**: Personal data files should be placed in `backend/data/personal_data/` directory.
 
 **Manual Setup (Alternative):**
 
-1. **Template files are included** in the repo (in `backend/data/`):
+1. **Template files are included** in the repo (in `backend/data/personal_data_templates/`):
    - `facts_template.json` - Template for structured facts
    - `linkedin_template.pdf` - Template for LinkedIn profile
    - `summary_template.txt` - Template for personal summary
@@ -105,21 +105,27 @@ The setup script will automatically:
 
 2. **Create your personal data files** by copying templates:
    ```bash
-   cd backend/data
-   cp facts_template.json facts.json
-   cp summary_template.txt summary.txt
-   cp linkedin_template.pdf linkedin.pdf
-   cp style_template.txt style.txt
-   cp me_template.txt me.txt  # Optional
+   cd backend
+   mkdir -p data/personal_data
+   mkdir -p data/prompts
+   cp data/personal_data_templates/facts_template.json data/personal_data/facts.json
+   cp data/personal_data_templates/summary_template.txt data/personal_data/summary.txt
+   cp data/personal_data_templates/linkedin_template.pdf data/personal_data/linkedin.pdf
+   cp data/personal_data_templates/style_template.txt data/personal_data/style.txt
+   cp data/personal_data_templates/me_template.txt data/personal_data/me.txt  # Optional
+   cp data/prompts_template/system_prompt.txt data/prompts/system_prompt.txt
+   cp data/prompts_template/critical_rules.txt data/prompts/critical_rules.txt
+   cp data/prompts_template/proficiency_levels.json data/prompts/proficiency_levels.json
    # Edit these files with your personal information
    ```
 
-3. **Required files** for local development (in `backend/data/`):
+3. **Required files** for local development:
    - `facts.json` - Your structured facts
    - `summary.txt` - Your personal summary
    - `style.txt` - Your communication style
    - `linkedin.pdf` - Your LinkedIn profile (PDF)
    - `me.txt` - Optional personal description
+   - `system_prompt.txt`, `critical_rules.txt`, `proficiency_levels.json` in `backend/data/prompts/`
 
 4. **Note**: 
    - These files are gitignored and won't be committed to the repository

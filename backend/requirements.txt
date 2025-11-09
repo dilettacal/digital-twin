@@ -11,3 +11,4 @@ httpx
 pyjwt
 cryptography
 requests
+structlog

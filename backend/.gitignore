@@ -36,6 +36,16 @@ lambda-package/
 ../memory/
 /tmp/
 
+# Personal data (ignore contents, keep placeholder)
+data/personal_data/*
+!data/personal_data/
+!data/personal_data/__init__.py
+
+# Prompts (ignore contents, keep placeholder)
+data/prompts/*
+!data/prompts/
+!data/prompts/__init__.py
+
 # OS
 .DS_Store
 Thumbs.db

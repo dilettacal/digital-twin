@@ -50,13 +50,16 @@ def main():
     if os.path.exists("app"):
         shutil.copytree("app", "lambda-package/app")
     
-    # Create data directory in package
-    os.makedirs("lambda-package/data", exist_ok=True)
+    # Create data directories in package
+    lambda_data_dir = "lambda-package/data"
+    lambda_personal_data_dir = os.path.join(lambda_data_dir, "personal_data")
+    os.makedirs(lambda_personal_data_dir, exist_ok=True)
     
-    # ALWAYS copy prompts directory (it's in git and required)
-    if os.path.exists("data/prompts"):
+    # ALWAYS copy prompts directory (required for runtime)
+    prompts_source_dir = os.path.join("data", "prompts")
+    if os.path.exists(prompts_source_dir):
         print("📋 Copying prompts directory...")
-        shutil.copytree("data/prompts", "lambda-package/data/prompts")
+        shutil.copytree(prompts_source_dir, os.path.join(lambda_data_dir, "prompts"))
         print("✅ Prompts directory copied")
     else:
         print("❌ ERROR: prompts directory not found at data/prompts!")
@@ -86,7 +89,7 @@ def main():
             ]
             for file_name in files_to_download:
                 try:
-                    s3.download_file(personal_data_bucket, file_name, f"lambda-package/data/{file_name}")
+                    s3.download_file(personal_data_bucket, file_name, os.path.join(lambda_personal_data_dir, file_name))
                     print(f"✅ Downloaded {file_name} from S3")
                 except Exception as e:
                     print(f"⚠️  Warning: Could not download {file_name} from S3: {e}")
@@ -95,28 +98,30 @@ def main():
             print(f"⚠️  Warning: Could not download from S3: {e}")
             print("   Falling back to local data files...")
             # Fall back to local data files if S3 download fails
-            if os.path.exists("data"):
+            personal_data_source_dir = os.path.join("data", "personal_data")
+            if os.path.exists(personal_data_source_dir):
                 print("📋 Copying local data files...")
-                for item in os.listdir("data"):
-                    src_path = os.path.join("data", item)
-                    dst_path = os.path.join("lambda-package/data", item)
-                    # Skip prompts (already copied) and directories
-                    if item == "prompts" or os.path.isdir(src_path):
-                        continue
-                    if os.path.isfile(src_path):
+                for item in os.listdir(personal_data_source_dir):
+                    src_path = os.path.join(personal_data_source_dir, item)
+                    dst_path = os.path.join(lambda_personal_data_dir, item)
+                    if os.path.isdir(src_path):
+                        shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+                        print(f"✅ Copied directory {item}/")
+                    elif os.path.isfile(src_path):
                         shutil.copy2(src_path, dst_path)
                         print(f"✅ Copied {item}")
     else:
         # No S3 bucket configured, use local data files
         print("📋 No PERSONAL_DATA_BUCKET set, copying local data files...")
-        if os.path.exists("data"):
-            for item in os.listdir("data"):
-                src_path = os.path.join("data", item)
-                dst_path = os.path.join("lambda-package/data", item)
-                # Skip prompts (already copied) and directories
-                if item == "prompts" or os.path.isdir(src_path):
-                    continue
-                if os.path.isfile(src_path):
+        personal_data_source_dir = os.path.join("data", "personal_data")
+        if os.path.exists(personal_data_source_dir):
+            for item in os.listdir(personal_data_source_dir):
+                src_path = os.path.join(personal_data_source_dir, item)
+                dst_path = os.path.join(lambda_personal_data_dir, item)
+                if os.path.isdir(src_path):
+                    shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+                    print(f"✅ Copied directory {item}/")
+                elif os.path.isfile(src_path):
                     shutil.copy2(src_path, dst_path)
                     print(f"✅ Copied {item}")
 

@@ -12,8 +12,11 @@ from app.core.config import (
     RATE_LIMIT_WINDOW_SECONDS,
     RATE_LIMIT_COOLDOWN_SECONDS
 )
+from structlog.contextvars import bind_contextvars, clear_contextvars
+from app.core.logging import get_logger
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -24,15 +27,13 @@ async def chat(request: ChatRequest, http_request: Request):
     Accepts a message and optional session_id, returns AI response.
     Authentication is optional but provides better rate limiting.
     """
+    bind_contextvars(endpoint="chat")
     try:
-        # Try to get authenticated user (optional)
         user = await get_current_user(http_request)
-        
-        # Generate session ID if not provided
+
         session_id = request.session_id or str(uuid.uuid4())
-        
-        # Get client identifier for rate limiting
-        # Prefer user ID if authenticated, fall back to session/IP
+        bind_contextvars(session_id=session_id)
+
         if user and user.get("user_id"):
             client_id = f"user:{user['user_id']}"
         else:
@@ -40,25 +41,24 @@ async def chat(request: ChatRequest, http_request: Request):
                 request_headers=dict(http_request.headers),
                 session_id=session_id
             )
-        
-        # Check rate limits
+
+        bind_contextvars(client_id=client_id)
+
         allowed, error_msg = rate_limiter.check_rate_limit(
             identifier=client_id,
             max_requests=RATE_LIMIT_MAX_REQUESTS,
             window_seconds=RATE_LIMIT_WINDOW_SECONDS,
             cooldown_seconds=RATE_LIMIT_COOLDOWN_SECONDS
         )
-        
+
         if not allowed:
+            logger.warning("chat_rate_limited", reason=error_msg)
             raise HTTPException(status_code=429, detail=error_msg)
 
-        # Load conversation history
         conversation = load_conversation(session_id)
 
-        # Get AI response
         assistant_response = get_ai_response(conversation, request.message)
 
-        # Update conversation history
         conversation.append(
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
         )
@@ -70,27 +70,40 @@ async def chat(request: ChatRequest, http_request: Request):
             }
         )
 
-        # Save conversation
         save_conversation(session_id, conversation)
+
+        logger.info(
+            "chat_completed",
+            authenticated=bool(user),
+            provided_session_id=bool(request.session_id),
+            message_count=len(conversation),
+        )
 
         return ChatResponse(response=assistant_response, session_id=session_id)
 
-    except HTTPException:
+    except HTTPException as exc:
+        logger.warning("chat_http_error", status_code=exc.status_code, detail=exc.detail)
         raise
-    except ValueError as e:
-        # Validation errors from pydantic
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error in chat endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except ValueError as exc:
+        logger.warning("chat_validation_error", error=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.exception("chat_unexpected_error", error=str(exc))
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        clear_contextvars()
 
 
 @router.get("/conversation/{session_id}")
 async def get_conversation(session_id: str):
     """Retrieve conversation history for a session."""
+    bind_contextvars(endpoint="get_conversation", session_id=session_id)
     try:
         conversation = load_conversation(session_id)
         return {"session_id": session_id, "messages": conversation}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.exception("conversation_fetch_error", error=str(exc))
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        clear_contextvars()
 

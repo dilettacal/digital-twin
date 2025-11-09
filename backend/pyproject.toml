@@ -17,4 +17,5 @@ dependencies = [
     "pyjwt>=2.8.0",
     "cryptography>=41.0.0",
     "requests>=2.32.0",
+    "structlog>=24.2.0",
 ]
