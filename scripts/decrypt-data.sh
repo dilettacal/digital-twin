@@ -73,43 +73,66 @@ while IFS= read -r -d '' encrypted_file; do
     relative_path="${encrypted_file#$ENCRYPTED_PERSONAL_DATA_DIR/}"
     relative_path="${relative_path%.encrypted}"
     output_file="$DATA_DIR/$relative_path"
-
+        
     echo "  Decrypting $relative_path..."
 
     mkdir -p "$(dirname "$output_file")"
+        
+        openssl enc -aes-256-cbc \
+            -d \
+            -salt \
+            -pbkdf2 \
+            -in "$encrypted_file" \
+            -out "$output_file" \
+            -pass "pass:$DATA_KEY"
+        status=$?
 
-    openssl enc -aes-256-cbc \
-        -d \
-        -salt \
-        -pbkdf2 \
-        -in "$encrypted_file" \
-        -out "$output_file" \
-        -pass "pass:$DATA_KEY"
-    status=$?
-
-    if [ $status -eq 0 ]; then
+        if [ $status -eq 0 ]; then
         echo "  ✅ Decrypted to $relative_path"
-        ((DECRYPTED_COUNT++))
-    else
+            ((DECRYPTED_COUNT++))
+        else
         echo "  ❌ Failed to decrypt $relative_path (exit code $status)"
-        ((FAILED_COUNT++))
+            ((FAILED_COUNT++))
     fi
 done < <(find "$ENCRYPTED_PERSONAL_DATA_DIR" -type f -name '*.encrypted' -print0)
 set -e
 
 if [ -d "$ENCRYPTED_PROMPTS_DIR" ]; then
     echo ""
-    echo "📚 Copying prompt files..."
-    if [ -n "$(find "$ENCRYPTED_PROMPTS_DIR" -type f 2>/dev/null)" ]; then
-        cp -a "$ENCRYPTED_PROMPTS_DIR/." "$PROMPTS_DIR/"
-        UPDATED_PROMPTS=true
-        echo "  ✅ Prompts copied to $PROMPTS_DIR"
+    echo "📚 Decrypting prompt files..."
+    if [ -n "$(find "$ENCRYPTED_PROMPTS_DIR" -type f -name '*.encrypted' 2>/dev/null)" ]; then
+        while IFS= read -r -d '' encrypted_prompt; do
+            relative_path="${encrypted_prompt#$ENCRYPTED_PROMPTS_DIR/}"
+            relative_path="${relative_path%.encrypted}"
+            output_file="$PROMPTS_DIR/$relative_path"
+
+            echo "  Decrypting prompt $relative_path..."
+
+            mkdir -p "$(dirname "$output_file")"
+
+            openssl enc -aes-256-cbc \
+                -d \
+                -salt \
+                -pbkdf2 \
+                -in "$encrypted_prompt" \
+                -out "$output_file" \
+                -pass "pass:$DATA_KEY"
+            status=$?
+
+            if [ $status -eq 0 ]; then
+                echo "  ✅ Decrypted prompt to $relative_path"
+                UPDATED_PROMPTS=true
+            else
+                echo "  ❌ Failed to decrypt prompt $relative_path (exit code $status)"
+                ((FAILED_COUNT++))
+            fi
+        done < <(find "$ENCRYPTED_PROMPTS_DIR" -type f -name '*.encrypted' -print0)
     else
-        echo "  ⚠️  Warning: No prompt files found in $ENCRYPTED_PROMPTS_DIR"
+        echo "  ⚠️  Warning: No encrypted prompt files found in $ENCRYPTED_PROMPTS_DIR"
     fi
 else
     echo ""
-    echo "ℹ️  No prompts directory found in $ENCRYPTED_DIR (skipping prompt copy)"
+    echo "ℹ️  No prompts directory found in $ENCRYPTED_DIR (skipping prompt decrypt)"
 fi
 
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

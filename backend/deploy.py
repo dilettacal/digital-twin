@@ -56,6 +56,7 @@ def main():
     lambda_prompts_dir = os.path.join(lambda_data_dir, "prompts")
     os.makedirs(lambda_personal_data_dir, exist_ok=True)
     os.makedirs(lambda_prompts_dir, exist_ok=True)
+    prompts_template_dir = os.path.join("data", "prompts_template")
     
     # Download personal data from S3 if bucket is specified
     personal_data_bucket = os.getenv("PERSONAL_DATA_BUCKET")
@@ -154,9 +155,35 @@ def main():
             prompts_synced = True
             print("✅ Copied prompts directory from local data")
 
-    if not prompts_synced:
-        print("❌ ERROR: Prompt files were not found in S3 or local data/prompts")
-        raise FileNotFoundError("Prompts directory is required for deployment.")
+    required_prompt_files = [
+        "system_prompt.txt",
+        "critical_rules.txt",
+        "proficiency_levels.json",
+    ]
+
+    missing_required_prompts = []
+    for prompt_file in required_prompt_files:
+        target_path = os.path.join(lambda_prompts_dir, prompt_file)
+        if not os.path.exists(target_path):
+            missing_required_prompts.append(prompt_file)
+
+    if missing_required_prompts and os.path.exists(prompts_template_dir):
+        print("📄 Filling missing prompt files from prompts_template...")
+        for prompt_file in missing_required_prompts:
+            src = os.path.join(prompts_template_dir, prompt_file)
+            dst = os.path.join(lambda_prompts_dir, prompt_file)
+            if os.path.exists(src):
+                shutil.copy2(src, dst)
+                print(f"  ✅ Copied {prompt_file} from prompts_template")
+            else:
+                print(f"  ⚠️  Template for {prompt_file} not found in prompts_template")
+
+    for prompt_file in required_prompt_files:
+        if not os.path.exists(os.path.join(lambda_prompts_dir, prompt_file)):
+            raise FileNotFoundError(
+                f"Prompt file '{prompt_file}' is required but was not found. "
+                "Ensure prompts are available in S3, data/prompts, or data/prompts_template."
+            )
 
     # Verify critical paths exist
     print("\n🔍 Verifying package structure...")
