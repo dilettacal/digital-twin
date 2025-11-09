@@ -2,6 +2,7 @@
 import json
 import os
 import re
+from pathlib import Path
 from typing import Dict, List
 from botocore.exceptions import ClientError
 from app.core.config import MEMORY_DIR, S3_BUCKET, USE_S3, s3_client
@@ -28,8 +29,8 @@ def load_conversation(session_id: str) -> List[Dict]:
     else:
         # Local file storage
         file_path = _safe_join(MEMORY_DIR, get_memory_path(session_id))
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
+        if file_path.exists():
+            with file_path.open("r", encoding="utf-8") as f:
                 return json.load(f)
         return []
 
@@ -47,7 +48,7 @@ def save_conversation(session_id: str, messages: List[Dict]):
         # Local file storage
         os.makedirs(MEMORY_DIR, exist_ok=True)
         file_path = _safe_join(MEMORY_DIR, get_memory_path(session_id))
-        with open(file_path, "w") as f:
+        with file_path.open("w", encoding="utf-8") as f:
             json.dump(messages, f, indent=2)
 
 
@@ -60,10 +61,12 @@ def _sanitize_session_id(session_id: str) -> str:
     return session_id
 
 
-def _safe_join(base_dir: str, filename: str) -> str:
+def _safe_join(base_dir: str, filename: str) -> Path:
     """Safely join paths ensuring the final path stays within base_dir."""
-    candidate_path = os.path.abspath(os.path.join(base_dir, filename))
-    base_path = os.path.abspath(base_dir)
-    if os.path.commonpath([candidate_path, base_path]) != base_path:
+    base_path = Path(base_dir).resolve()
+    candidate_path = (base_path / filename).resolve()
+    try:
+        candidate_path.relative_to(base_path)
+    except ValueError:
         raise ValueError("Invalid path derived from session ID.")
     return candidate_path
