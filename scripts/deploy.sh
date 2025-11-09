@@ -59,6 +59,12 @@ done
 ENVIRONMENT=${ENVIRONMENT:-dev}
 PROJECT_NAME=${PROJECT_NAME:-digital-twin}
 
+if [ "$VERBOSE" = true ]; then
+  export DEPLOY_QUIET=false
+else
+  export DEPLOY_QUIET=true
+fi
+
 log() {
   if [ "$VERBOSE" = true ]; then
     echo "$@"

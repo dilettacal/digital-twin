@@ -46,10 +46,18 @@ mkdir -p "$PROMPTS_DIR"
 touch "$DATA_DIR/__init__.py" "$PROMPTS_DIR/__init__.py"
 
 # Clean target directories (preserve __init__.py)
-echo "🧹 Cleaning existing personal data files..."
+quiet="${DEPLOY_QUIET:-false}"
+
+log() {
+    if [ "$quiet" = false ]; then
+        echo "$@"
+    fi
+}
+
+log "🧹 Cleaning existing personal data files..."
 find "$DATA_DIR" -mindepth 1 ! -name '__init__.py' -exec rm -rf {} +
 
-echo "🧹 Cleaning existing prompt files..."
+log "🧹 Cleaning existing prompt files..."
 find "$PROMPTS_DIR" -mindepth 1 ! -name '__init__.py' -exec rm -rf {} +
 
 # Check if encrypted personal data files exist
@@ -61,8 +69,8 @@ if [ ! -d "$ENCRYPTED_PERSONAL_DATA_DIR" ] || [ -z "$(find "$ENCRYPTED_PERSONAL_
     exit 1
 fi
 
-echo "🔓 Decrypting personal data files..."
-echo ""
+log "🔓 Decrypting personal data files..."
+log ""
 
 DECRYPTED_COUNT=0
 FAILED_COUNT=0
@@ -74,7 +82,7 @@ while IFS= read -r -d '' encrypted_file; do
     relative_path="${relative_path%.encrypted}"
     output_file="$DATA_DIR/$relative_path"
         
-    echo "  Decrypting $relative_path..."
+    log "  Decrypting $relative_path..."
 
     mkdir -p "$(dirname "$output_file")"
         
@@ -88,25 +96,25 @@ while IFS= read -r -d '' encrypted_file; do
         status=$?
 
         if [ $status -eq 0 ]; then
-        echo "  ✅ Decrypted to $relative_path"
+            log "  ✅ Decrypted to $relative_path"
             ((DECRYPTED_COUNT++))
         else
-        echo "  ❌ Failed to decrypt $relative_path (exit code $status)"
+            echo "  ❌ Failed to decrypt $relative_path (exit code $status)"
             ((FAILED_COUNT++))
-    fi
+        fi
 done < <(find "$ENCRYPTED_PERSONAL_DATA_DIR" -type f -name '*.encrypted' -print0)
 set -e
 
 if [ -d "$ENCRYPTED_PROMPTS_DIR" ]; then
-    echo ""
-    echo "📚 Decrypting prompt files..."
+    log ""
+    log "📚 Decrypting prompt files..."
     if [ -n "$(find "$ENCRYPTED_PROMPTS_DIR" -type f -name '*.encrypted' 2>/dev/null)" ]; then
         while IFS= read -r -d '' encrypted_prompt; do
             relative_path="${encrypted_prompt#$ENCRYPTED_PROMPTS_DIR/}"
             relative_path="${relative_path%.encrypted}"
             output_file="$PROMPTS_DIR/$relative_path"
 
-            echo "  Decrypting prompt $relative_path..."
+            log "  Decrypting prompt $relative_path..."
 
             mkdir -p "$(dirname "$output_file")"
 
@@ -120,7 +128,7 @@ if [ -d "$ENCRYPTED_PROMPTS_DIR" ]; then
             status=$?
 
             if [ $status -eq 0 ]; then
-                echo "  ✅ Decrypted prompt to $relative_path"
+                log "  ✅ Decrypted prompt to $relative_path"
                 UPDATED_PROMPTS=true
             else
                 echo "  ❌ Failed to decrypt prompt $relative_path (exit code $status)"
@@ -128,11 +136,11 @@ if [ -d "$ENCRYPTED_PROMPTS_DIR" ]; then
             fi
         done < <(find "$ENCRYPTED_PROMPTS_DIR" -type f -name '*.encrypted' -print0)
     else
-        echo "  ⚠️  Warning: No encrypted prompt files found in $ENCRYPTED_PROMPTS_DIR"
+        log "  ⚠️  Warning: No encrypted prompt files found in $ENCRYPTED_PROMPTS_DIR"
     fi
 else
-    echo ""
-    echo "ℹ️  No prompts directory found in $ENCRYPTED_DIR (skipping prompt decrypt)"
+    log ""
+    log "ℹ️  No prompts directory found in $ENCRYPTED_DIR (skipping prompt decrypt)"
 fi
 
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -142,10 +150,12 @@ if [ "$UPDATED_PROMPTS" = true ]; then
     echo "$timestamp" > "$PROMPTS_DIR/last_updated.txt"
 fi
 
-echo ""
-if [ $DECRYPTED_COUNT -gt 0 ]; then
-    echo "🎉 Decryption complete!"
-    echo "   Decrypted $DECRYPTED_COUNT file(s) to $DATA_DIR"
+if [ "$quiet" = false ]; then
+    echo ""
+    if [ $DECRYPTED_COUNT -gt 0 ]; then
+        echo "🎉 Decryption complete!"
+        echo "   Decrypted $DECRYPTED_COUNT file(s) to $DATA_DIR"
+    fi
 fi
 
 if [ $FAILED_COUNT -gt 0 ]; then
@@ -154,6 +164,8 @@ if [ $FAILED_COUNT -gt 0 ]; then
     exit 1
 fi
 
-echo ""
-echo "✅ All files decrypted successfully!"
+if [ "$quiet" = false ]; then
+    echo ""
+    echo "✅ All files decrypted successfully!"
+fi
 

@@ -16,8 +16,20 @@ PROMPTS_DIR="${PROJECT_ROOT}/backend/data/prompts"
 PERSONAL_DATA_S3_PREFIX="personal_data"
 PROMPTS_S3_PREFIX="prompts"
 
+quiet=${DEPLOY_QUIET:-false}
+
 log() {
-  echo "$(date +'%Y-%m-%dT%H:%M:%S%z') | $*"
+  local message="$*"
+  if [ "$quiet" = true ]; then
+    case "$message" in
+      ❌*|⚠️*)
+        ;;
+      *)
+        return
+        ;;
+    esac
+  fi
+  echo "$(date +'%Y-%m-%dT%H:%M:%S%z') | $message"
 }
 
 log "🔐 Uploading personal data → ${ENVIRONMENT}"
@@ -77,7 +89,7 @@ upload_file() {
   fi
 
   if [ -f "${DATA_DIR}/${src}" ]; then
-    aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}"
+    aws s3 cp "${DATA_DIR}/${src}" "${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key}" --region "${AWS_REGION}" $( [ "$quiet" = true ] && echo "--only-show-errors" )
     log "✅ Uploaded ${src} to ${PERSONAL_DATA_S3_PREFIX}/${key}"
   elif [ "${required}" = "true" ]; then
     log "❌ Error: required file ${src} not found"
@@ -101,7 +113,11 @@ upload_directory() {
     if [ -n "${PERSONAL_DATA_S3_PREFIX}" ]; then
       destination_prefix="${S3_URI}/${PERSONAL_DATA_S3_PREFIX}/${key_prefix}/"
     fi
-    aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*"
+    if [ "$quiet" = true ]; then
+      aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*" --only-show-errors --no-progress
+    else
+      aws s3 sync "${DATA_DIR}/${dir}/" "${destination_prefix}" --delete --region "${AWS_REGION}" --exclude "*_template*"
+    fi
     log "✅ Synced ${dir}/"
   else
     log "⚠️  Warning: directory ${dir}/ not found"
@@ -141,7 +157,11 @@ done
 
 if [ -d "${PROMPTS_DIR}" ]; then
   log "📚 Syncing prompts directory..."
-  aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}"
+  if [ "$quiet" = true ]; then
+    aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}" --only-show-errors --no-progress
+  else
+    aws s3 sync "${PROMPTS_DIR}/" "${S3_URI}/${PROMPTS_S3_PREFIX}/" --delete --region "${AWS_REGION}"
+  fi
   log "✅ Synced prompts/"
 else
   log "⚠️  Warning: prompts directory not found at ${PROMPTS_DIR}"
