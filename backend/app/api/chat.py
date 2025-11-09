@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request
 from app.models import ChatRequest, ChatResponse
-from app.services.memory_service import load_conversation, save_conversation
+from app.services.memory import get_memory_service
 from app.services.ai_service import get_ai_response
 from app.core.rate_limiter import rate_limiter, get_client_identifier
 from app.core.auth import get_current_user
@@ -17,6 +17,7 @@ from app.core.logging import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)
+memory_service = get_memory_service()
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -55,7 +56,7 @@ async def chat(request: ChatRequest, http_request: Request):
             logger.warning("chat_rate_limited", reason=error_msg)
             raise HTTPException(status_code=429, detail=error_msg)
 
-        conversation = load_conversation(session_id)
+        conversation = memory_service.load_conversation(session_id)
 
         assistant_response = get_ai_response(conversation, request.message)
 
@@ -70,7 +71,7 @@ async def chat(request: ChatRequest, http_request: Request):
             }
         )
 
-        save_conversation(session_id, conversation)
+        memory_service.save_conversation(session_id, conversation)
 
         logger.info(
             "chat_completed",
@@ -99,7 +100,7 @@ async def get_conversation(session_id: str):
     """Retrieve conversation history for a session."""
     bind_contextvars(endpoint="get_conversation", session_id=session_id)
     try:
-        conversation = load_conversation(session_id)
+        conversation = memory_service.load_conversation(session_id)
         return {"session_id": session_id, "messages": conversation}
     except Exception as exc:
         logger.exception("conversation_fetch_error", error=str(exc))
