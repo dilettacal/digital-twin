@@ -6,14 +6,16 @@ import importlib
 import os
 from typing import Any, Dict
 
+import requests
+
 pytest = importlib.import_module("pytest")
 
 
 def _load_ai_modules():
     from app.services import ai as ai_pkg  # local import to allow env setup first
-    from app.services.ai import AIService, BedrockAIService, OpenAIAIService, get_ai_service
+    from app.services.ai import AIService, BedrockAIService, OllamaAIService, OpenAIAIService, get_ai_service
 
-    return ai_pkg, AIService, BedrockAIService, OpenAIAIService, get_ai_service
+    return ai_pkg, AIService, BedrockAIService, OllamaAIService, OpenAIAIService, get_ai_service
 
 
 os.environ.setdefault("AI_PROVIDER", "bedrock")
@@ -25,6 +27,7 @@ os.environ.setdefault("RATE_LIMIT_COOLDOWN_SECONDS", "1.0")
     ai_pkg,
     AIServiceBase,
     BedrockAIService,
+    OllamaAIService,
     OpenAIAIService,
     get_ai_service,
 ) = _load_ai_modules()
@@ -64,6 +67,18 @@ def test_openai_build_messages_includes_system_and_user(monkeypatch: pytest.Monk
 
     conversation = [{"role": "assistant", "content": "Hi!"}]
     service = OpenAIAIService()
+    messages = service._build_messages(conversation, "Hello")
+
+    assert messages[0]["role"] == "system"
+    assert messages[-1]["content"] == "Hello"
+    assert len(messages) == 3
+
+
+def test_ollama_build_messages_includes_system_and_user(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr("app.services.ai.ollama.prompt", lambda: "System prompt", raising=False)
+
+    conversation = [{"role": "assistant", "content": "Hi!"}]
+    service = OllamaAIService()
     messages = service._build_messages(conversation, "Hello")
 
     assert messages[0]["role"] == "system"
@@ -178,6 +193,44 @@ def test_openai_ai_service_handles_errors(monkeypatch: pytest.MonkeyPatch):
     assert getattr(exc_info.value, "status_code", None) == 500
 
 
+def test_ollama_ai_service_success(monkeypatch: pytest.MonkeyPatch):
+    class FakeResponse:
+        def __init__(self, payload: Dict[str, Any]) -> None:
+            self._payload = payload
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> Dict[str, Any]:
+            return self._payload
+
+    def fake_post(*args: Any, **kwargs: Any) -> FakeResponse:
+        return FakeResponse({"message": {"content": "Ollama reply"}})
+
+    monkeypatch.setattr("app.services.ai.ollama.requests.post", fake_post, raising=False)
+    monkeypatch.setattr("app.services.ai.ollama.prompt", lambda: "System prompt", raising=False)
+
+    service = OllamaAIService()
+    result = service.generate_response([], "Hello")
+
+    assert result == "Ollama reply"
+
+
+def test_ollama_ai_service_handles_errors(monkeypatch: pytest.MonkeyPatch):
+    def fake_post(*args: Any, **kwargs: Any) -> None:
+        raise requests.RequestException("connection error")
+
+    monkeypatch.setattr("app.services.ai.ollama.requests.post", fake_post, raising=False)
+    monkeypatch.setattr("app.services.ai.ollama.prompt", lambda: "System prompt", raising=False)
+
+    service = OllamaAIService()
+    with pytest.raises(Exception) as exc_info:
+        service.generate_response([], "Hello")
+
+    assert type(exc_info.value).__name__ == "HTTPException"
+    assert getattr(exc_info.value, "status_code", None) == 502
+
+
 def test_get_ai_service_respects_provider(monkeypatch: pytest.MonkeyPatch):
     ai_pkg.get_ai_service.cache_clear()
     monkeypatch.setattr("app.services.ai.AI_PROVIDER", "openai", raising=False)
@@ -198,6 +251,14 @@ def test_get_ai_service_respects_provider(monkeypatch: pytest.MonkeyPatch):
 
     service = get_ai_service()
     assert isinstance(service, OpenAIAIService)
+
+    ai_pkg.get_ai_service.cache_clear()
+    monkeypatch.setattr("app.services.ai.AI_PROVIDER", "ollama", raising=False)
+    monkeypatch.setattr("app.services.ai.ollama.prompt", lambda: "System prompt", raising=False)
+    monkeypatch.setattr("app.services.ai.ollama.requests.post", lambda *args, **kwargs: type("R", (), {"raise_for_status": lambda self: None, "json": lambda self: {"message": {"content": ""}}})(), raising=False)
+
+    service = get_ai_service()
+    assert isinstance(service, OllamaAIService)
 
     ai_pkg.get_ai_service.cache_clear()
     monkeypatch.setattr("app.services.ai.AI_PROVIDER", "bedrock", raising=False)

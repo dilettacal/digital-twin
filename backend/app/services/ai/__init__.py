@@ -9,11 +9,13 @@ from app.core.logging import get_logger
 
 from .base import AIService
 from .bedrock import BedrockAIService
+from .ollama import OllamaAIService
 from .openai import OpenAIAIService
 
 __all__ = [
     "AIService",
     "BedrockAIService",
+    "OllamaAIService",
     "OpenAIAIService",
     "get_ai_service",
 ]
@@ -27,5 +29,8 @@ def get_ai_service() -> AIService:
     if AI_PROVIDER == "openai":
         _logger.info("ai_service_selected", provider="openai")
         return OpenAIAIService()
+    if AI_PROVIDER == "ollama":
+        _logger.info("ai_service_selected", provider="ollama")
+        return OllamaAIService()
     _logger.info("ai_service_selected", provider="bedrock")
     return BedrockAIService()
