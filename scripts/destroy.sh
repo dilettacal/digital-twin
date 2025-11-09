@@ -21,7 +21,7 @@ LOCK_TABLE="${PROJECT_NAME}-terraform-locks"
 
 terraform init -input=false -reconfigure \
   -backend-config="bucket=${STATE_BUCKET}" \
-  -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
+  -backend-config="key=${PROJECT_NAME}/${ENVIRONMENT}.tfstate" \
   -backend-config="region=${AWS_REGION}" \
   -backend-config="dynamodb_table=${LOCK_TABLE}" \
   -backend-config="encrypt=true"

@@ -33,12 +33,24 @@ if ! aws dynamodb describe-table --table-name "$LOCK_TABLE" >/dev/null 2>&1; the
   exit 1
 fi
 
-terraform init -input=false -reconfigure \
-  -backend-config="bucket=${STATE_BUCKET}" \
-  -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
-  -backend-config="region=${AWS_REGION}" \
-  -backend-config="dynamodb_table=${LOCK_TABLE}" \
-  -backend-config="encrypt=true"
+if [ -f "terraform.tfstate" ] && ! aws s3api head-object \
+      --bucket "$STATE_BUCKET" \
+      --key "${PROJECT_NAME}/${ENVIRONMENT}.tfstate" >/dev/null 2>&1; then
+  echo "🌀 Local state detected, migrating to remote backend..."
+  terraform init -migrate-state -backend-config="bucket=$STATE_BUCKET" \
+    -backend-config="key=${PROJECT_NAME}/${ENVIRONMENT}.tfstate" \
+    -backend-config="region=$AWS_REGION" \
+    -backend-config="dynamodb_table=$LOCK_TABLE" \
+    -backend-config="encrypt=true"
+  rm -f terraform.tfstate terraform.tfstate.backup
+else
+  terraform init -input=false -reconfigure \
+    -backend-config="bucket=$STATE_BUCKET" \
+    -backend-config="key=${PROJECT_NAME}/${ENVIRONMENT}.tfstate" \
+    -backend-config="region=$AWS_REGION" \
+    -backend-config="dynamodb_table=$LOCK_TABLE" \
+    -backend-config="encrypt=true"
+fi
 
 # Workspace
 if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
