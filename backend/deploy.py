@@ -53,20 +53,13 @@ def main():
     # Create data directories in package
     lambda_data_dir = "lambda-package/data"
     lambda_personal_data_dir = os.path.join(lambda_data_dir, "personal_data")
+    lambda_prompts_dir = os.path.join(lambda_data_dir, "prompts")
     os.makedirs(lambda_personal_data_dir, exist_ok=True)
-    
-    # ALWAYS copy prompts directory (required for runtime)
-    prompts_source_dir = os.path.join("data", "prompts")
-    if os.path.exists(prompts_source_dir):
-        print("📋 Copying prompts directory...")
-        shutil.copytree(prompts_source_dir, os.path.join(lambda_data_dir, "prompts"))
-        print("✅ Prompts directory copied")
-    else:
-        print("❌ ERROR: prompts directory not found at data/prompts!")
-        raise FileNotFoundError("data/prompts directory is required but not found")
+    os.makedirs(lambda_prompts_dir, exist_ok=True)
     
     # Download personal data from S3 if bucket is specified
     personal_data_bucket = os.getenv("PERSONAL_DATA_BUCKET")
+    prompts_synced = False
     if personal_data_bucket:
         print(f"📥 Downloading personal data from S3 bucket: {personal_data_bucket}")
         try:
@@ -93,6 +86,26 @@ def main():
                     print(f"✅ Downloaded {file_name} from S3")
                 except Exception as e:
                     print(f"⚠️  Warning: Could not download {file_name} from S3: {e}")
+
+            # Download prompts directory from S3 (prefix: prompts/)
+            print("📥 Downloading prompts from S3...")
+            paginator = s3.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=personal_data_bucket, Prefix="prompts/"):
+                for obj in page.get("Contents", []):
+                    key = obj["Key"]
+                    if key.endswith("/"):
+                        continue
+                    relative_path = key[len("prompts/"):]
+                    if not relative_path:
+                        continue
+                    destination_path = os.path.join(lambda_prompts_dir, relative_path)
+                    os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+                    try:
+                        s3.download_file(personal_data_bucket, key, destination_path)
+                        prompts_synced = True
+                        print(f"✅ Downloaded prompt {relative_path} from S3")
+                    except Exception as e:
+                        print(f"⚠️  Warning: Could not download prompt {key} from S3: {e}")
                     
         except Exception as e:
             print(f"⚠️  Warning: Could not download from S3: {e}")
@@ -110,6 +123,17 @@ def main():
                     elif os.path.isfile(src_path):
                         shutil.copy2(src_path, dst_path)
                         print(f"✅ Copied {item}")
+            prompts_source_dir = os.path.join("data", "prompts")
+            if os.path.exists(prompts_source_dir) and os.listdir(prompts_source_dir):
+                shutil.copytree(prompts_source_dir, lambda_prompts_dir, dirs_exist_ok=True)
+                prompts_synced = True
+                print("✅ Copied prompts directory from local data")
+        if personal_data_bucket and not prompts_synced:
+            prompts_source_dir = os.path.join("data", "prompts")
+            if os.path.exists(prompts_source_dir) and os.listdir(prompts_source_dir):
+                shutil.copytree(prompts_source_dir, lambda_prompts_dir, dirs_exist_ok=True)
+                prompts_synced = True
+                print("⚠️  Warning: Using local prompts directory because S3 prompts were unavailable")
     else:
         # No S3 bucket configured, use local data files
         print("📋 No PERSONAL_DATA_BUCKET set, copying local data files...")
@@ -124,6 +148,15 @@ def main():
                 elif os.path.isfile(src_path):
                     shutil.copy2(src_path, dst_path)
                     print(f"✅ Copied {item}")
+        prompts_source_dir = os.path.join("data", "prompts")
+        if os.path.exists(prompts_source_dir) and os.listdir(prompts_source_dir):
+            shutil.copytree(prompts_source_dir, lambda_prompts_dir, dirs_exist_ok=True)
+            prompts_synced = True
+            print("✅ Copied prompts directory from local data")
+
+    if not prompts_synced:
+        print("❌ ERROR: Prompt files were not found in S3 or local data/prompts")
+        raise FileNotFoundError("Prompts directory is required for deployment.")
 
     # Verify critical paths exist
     print("\n🔍 Verifying package structure...")
