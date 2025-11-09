@@ -254,4 +254,6 @@ log ""
 announce "============================================"
 announce "✅ Deployment complete!"
 announce "============================================"
-[ -n "$CUSTOM_URL" ] && announce "🔗 Custom domain: $CUSTOM_URL"
+if [ -n "$CUSTOM_URL" ]; then
+  announce "🔗 Custom domain: $CUSTOM_URL"
+fi
