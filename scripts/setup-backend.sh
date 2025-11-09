@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_NAME=${1:-digital-twin}
-AWS_REGION=${DEFAULT_AWS_REGION:-eu-west-1}
+AWS_REGION=${DEFAULT_AWS_REGION:-eu-central-1}
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 STATE_BUCKET="${PROJECT_NAME}-terraform-state-${AWS_ACCOUNT_ID}"

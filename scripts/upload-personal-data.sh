@@ -6,7 +6,7 @@ STAGE=${1:-dev}
 
 # Configuration
 BUCKET_NAME="digital-twin-data-${STAGE}"
-REGION="eu-west-1"
+REGION="eu-central-1"
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

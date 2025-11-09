@@ -11,7 +11,7 @@ AI_PROVIDER = os.getenv("AI_PROVIDER", "bedrock").lower()
 
 # Bedrock configuration
 BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "eu.amazon.nova-lite-v1:0")
-DEFAULT_AWS_REGION = os.getenv("DEFAULT_AWS_REGION", "eu-west-1")
+DEFAULT_AWS_REGION = os.getenv("DEFAULT_AWS_REGION", "eu-central-1")
 
 # OpenAI configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

@@ -137,7 +137,7 @@ resource "aws_lambda_function" "api" {
       S3_BUCKET          = aws_s3_bucket.memory.id
       USE_S3             = "true"
       BEDROCK_MODEL_ID   = var.bedrock_model_id
-      DEFAULT_AWS_REGION = "eu-west-1"
+      DEFAULT_AWS_REGION = "eu-central-1"
     }
   }
 

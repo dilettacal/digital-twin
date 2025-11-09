@@ -1,103 +1,75 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-ENVIRONMENT=${1:-dev}
+ENVIRONMENT=${1:-dev}          # dev | test | prod
 PROJECT_NAME=${2:-digital-twin}
 
-echo "🚀 Deploying ${PROJECT_NAME} to ${ENVIRONMENT}..."
+echo "🚀 Deploying ${PROJECT_NAME} → ${ENVIRONMENT}"
 
 # 1. Build Lambda package
-cd "$(dirname "$0")/.."        # project root
+cd "$(dirname "$0")/.."         # project root
 echo "📦 Building Lambda package..."
-
-# Set PERSONAL_DATA_BUCKET if we want to download from S3 during build
-# This is optional - if not set, local data files will be used
-if [ -n "${USE_S3_DATA:-}" ]; then
-  export PERSONAL_DATA_BUCKET="digital-twin-data-${ENVIRONMENT}"
-  echo "📥 Will download personal data from S3: $PERSONAL_DATA_BUCKET"
-else
-  echo "📋 Will use local data files (set USE_S3_DATA=true to download from S3)"
-fi
-
 (cd backend && uv run deploy.py)
 
-# 2. Terraform workspace & apply
+# 2. Terraform init + apply
 cd terraform
-echo "🛠 Ensuring Terraform backend resources exist..."
-# ../scripts/setup-backend.sh "$PROJECT_NAME"
-export TF_IN_AUTOMATION=true
-export TF_CLI_ARGS="-no-color"
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-AWS_REGION=${DEFAULT_AWS_REGION:-eu-west-1}
+AWS_REGION=${DEFAULT_AWS_REGION:-eu-central-1}
+echo "Region set to $AWS_REGION"
+export AWS_DEFAULT_REGION=$AWS_REGION
 
-TF_BACKEND_BUCKET=${TF_BACKEND_BUCKET:-digital-twin-terraform-state-${AWS_ACCOUNT_ID}}
-TF_BACKEND_KEY=${TF_BACKEND_KEY:-${PROJECT_NAME}/${ENVIRONMENT}.tfstate}
+STATE_BUCKET="${PROJECT_NAME}-terraform-state-${AWS_ACCOUNT_ID}"
+LOCK_TABLE="${PROJECT_NAME}-terraform-locks"
 
-if [ "${USE_LOCAL_TERRAFORM_STATE:-}" = "true" ]; then
-  echo "⚠️  Using local Terraform state (not recommended for CI)."
-  terraform init -input=false -backend=false
-else
-  echo "🗄️  Configuring Terraform backend bucket ${TF_BACKEND_BUCKET} (${TF_BACKEND_KEY})"
-  BACKEND_ARGS=(
-    "-backend-config=bucket=${TF_BACKEND_BUCKET}"
-    "-backend-config=key=${TF_BACKEND_KEY}"
-    "-backend-config=region=${AWS_REGION}"
-    "-backend-config=encrypt=true"
-  )
-
-  if [ -n "${TF_BACKEND_DYNAMODB_TABLE:-}" ]; then
-    BACKEND_ARGS+=("-backend-config=dynamodb_table=${TF_BACKEND_DYNAMODB_TABLE}")
-  fi
-
-  terraform init -input=false -reconfigure "${BACKEND_ARGS[@]}"
+if ! aws s3api head-bucket --bucket "$STATE_BUCKET" >/dev/null 2>&1; then
+  echo "❌ Terraform state bucket not found."
+  echo "   Please ensure the shared Terraform backend resources exist before running deploy."
+  exit 1
 fi
 
+if ! aws dynamodb describe-table --table-name "$LOCK_TABLE" >/dev/null 2>&1; then
+  echo "❌ Terraform lock table not found."
+  echo "   Please ensure the shared Terraform backend resources exist before running deploy."
+  exit 1
+fi
+
+terraform init -input=false -reconfigure \
+  -backend-config="bucket=${STATE_BUCKET}" \
+  -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
+  -backend-config="region=${AWS_REGION}" \
+  -backend-config="dynamodb_table=${LOCK_TABLE}" \
+  -backend-config="encrypt=true"
+
+# Workspace
 if ! terraform workspace list | grep -q "$ENVIRONMENT"; then
   terraform workspace new "$ENVIRONMENT"
 else
   terraform workspace select "$ENVIRONMENT"
 fi
 
-# Use prod.tfvars for production environment
-if [ "$ENVIRONMENT" = "prod" ]; then
-  TF_APPLY_CMD=(terraform apply -var-file=prod.tfvars -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve)
+# Apply
+if [ "$ENVIRONMENT" = "prod" ] && [ -f "prod.tfvars" ]; then
+  terraform apply -var-file=prod.tfvars \
+    -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve
 else
-  TF_APPLY_CMD=(terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve)
+  terraform apply \
+    -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve
 fi
 
-echo "🎯 Applying Terraform..."
-"${TF_APPLY_CMD[@]}"
-
+# 3. Front-end upload
 API_URL=$(terraform output -raw api_gateway_url)
 FRONTEND_BUCKET=$(terraform output -raw s3_frontend_bucket)
 CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 
-# 3. Build + deploy frontend
 cd ../frontend
-
-ENV_FILE=".env.production"
-
-if [ -f ".env" ]; then
-  cp .env "$ENV_FILE"
-  echo "📋 Copied frontend/.env → .env.production"
-else
-  > "$ENV_FILE"
-  echo "⚠️  frontend/.env not found. Creating empty .env.production"
-fi
-
-echo "NEXT_PUBLIC_API_URL=$API_URL" >> "$ENV_FILE"
-API_URL_SEGMENT=${API_URL##*/}
-echo "📝 Building frontend (NEXT_PUBLIC_API_URL ending with /$API_URL_SEGMENT)"
-
-npm install
+echo "NEXT_PUBLIC_API_URL=$API_URL" > .env.production
+npm ci
 npm run build
 aws s3 sync ./out "s3://$FRONTEND_BUCKET/" --delete
 cd ..
 
-# 4. Final messages
+# 4. Done
 echo -e "\n✅ Deployment complete!"
-echo "🌐 CloudFront URL : $(terraform -chdir=terraform output -raw cloudfront_url)"
-if [ -n "$CUSTOM_URL" ]; then
-  echo "🔗 Custom domain  : $CUSTOM_URL"
-fi
-echo "📡 API Gateway    : $API_URL"
+echo "🌐 CloudFront: $(terraform -chdir=terraform output -raw cloudfront_url)"
+[ -n "$CUSTOM_URL" ] && echo "🔗 Custom domain: $CUSTOM_URL"
+echo "📡 API: $API_URL"
