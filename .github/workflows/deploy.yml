@@ -78,15 +78,6 @@ jobs:
           PRIVATE_REPO_NAME: ${{ vars.PRIVATE_DATA_REPO }}
           DATA_KEY: ${{ secrets.DATA_KEY }}
 
-      - name: Get Deployment URLs
-        id: deploy_outputs
-        working-directory: ./terraform
-        run: |
-          terraform workspace select ${{ github.event.inputs.environment || 'dev' }}
-          echo "cloudfront_url=$(terraform output -raw cloudfront_url)" >> $GITHUB_OUTPUT
-          echo "api_url=$(terraform output -raw api_gateway_url)" >> $GITHUB_OUTPUT
-          echo "frontend_bucket=$(terraform output -raw s3_frontend_bucket)" >> $GITHUB_OUTPUT
-
       - name: Invalidate CloudFront
         run: |
           DISTRIBUTION_ID=$(aws cloudfront list-distributions \
@@ -102,7 +93,4 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "✅ Deployment Complete!"
-          echo "🌐 CloudFront URL: ${{ steps.deploy_outputs.outputs.cloudfront_url }}"
-          echo ""
-          echo "🔒 Security Note: API Gateway URL is not displayed publicly."
-          echo "   Access Terraform outputs directly if you need the API URL for debugging."
+          echo "Check deployment outputs for details."
