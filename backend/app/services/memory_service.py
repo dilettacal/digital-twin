@@ -1,14 +1,18 @@
 """Memory/conversation storage service."""
-import os
 import json
-from typing import List, Dict
+import os
+import re
+from typing import Dict, List
 from botocore.exceptions import ClientError
-from app.core.config import USE_S3, S3_BUCKET, MEMORY_DIR, s3_client
+from app.core.config import MEMORY_DIR, S3_BUCKET, USE_S3, s3_client
+
+_SESSION_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 def get_memory_path(session_id: str) -> str:
     """Get the storage path for a session."""
-    return f"{session_id}.json"
+    safe_session_id = _sanitize_session_id(session_id)
+    return f"{safe_session_id}.json"
 
 
 def load_conversation(session_id: str) -> List[Dict]:
@@ -23,7 +27,7 @@ def load_conversation(session_id: str) -> List[Dict]:
             raise
     else:
         # Local file storage
-        file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))
+        file_path = _safe_join(MEMORY_DIR, get_memory_path(session_id))
         if os.path.exists(file_path):
             with open(file_path, "r") as f:
                 return json.load(f)
@@ -42,6 +46,24 @@ def save_conversation(session_id: str, messages: List[Dict]):
     else:
         # Local file storage
         os.makedirs(MEMORY_DIR, exist_ok=True)
-        file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))
+        file_path = _safe_join(MEMORY_DIR, get_memory_path(session_id))
         with open(file_path, "w") as f:
             json.dump(messages, f, indent=2)
+
+
+def _sanitize_session_id(session_id: str) -> str:
+    """Validate and sanitize session IDs before using them in storage."""
+    if not session_id:
+        raise ValueError("Session ID must be provided.")
+    if not _SESSION_ID_PATTERN.fullmatch(session_id):
+        raise ValueError("Session ID contains invalid characters.")
+    return session_id
+
+
+def _safe_join(base_dir: str, filename: str) -> str:
+    """Safely join paths ensuring the final path stays within base_dir."""
+    candidate_path = os.path.abspath(os.path.join(base_dir, filename))
+    base_path = os.path.abspath(base_dir)
+    if os.path.commonpath([candidate_path, base_path]) != base_path:
+        raise ValueError("Invalid path derived from session ID.")
+    return candidate_path

@@ -64,6 +64,16 @@ class TestChatEndpointValidation:
         assert "session_id" in data
         assert data["response"] == "Test response from assistant"
 
+    def test_rejects_invalid_session_id(self, client, mock_bedrock_response):
+        """Should reject session IDs with invalid characters."""
+        response = client.post("/chat", json={
+            "message": "Hello there",
+            "session_id": "../bad"
+        })
+        assert response.status_code == 400
+        data = response.json()
+        assert "Session ID contains invalid characters." in data["detail"]
+
 
 class TestChatEndpointRateLimiting:
     """Integration tests for rate limiting on chat endpoint."""
