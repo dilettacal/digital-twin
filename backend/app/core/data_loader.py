@@ -1,4 +1,5 @@
 """Data loading and caching utilities for personal data files."""
+import os
 import json
 import yaml
 from pathlib import Path
@@ -18,8 +19,15 @@ def _log_cache_miss(loader_name: str, path: Path) -> None:
     logger.info("data_loader_load", loader=loader_name, path=str(path))
 
 
-# Get the personal data directory path (backend/data/personal_data)
-PERSONAL_DATA_DIR = Path(__file__).parent.parent.parent / "data" / "personal_data"
+# Determine data directories (allow overrides for testing)
+DEFAULT_BASE_DATA_DIR = Path(__file__).parent.parent.parent / "data"
+BASE_DATA_DIR = Path(os.environ.get("DIGITAL_TWIN_DATA_DIR", DEFAULT_BASE_DATA_DIR))
+PERSONAL_DATA_DIR = Path(
+    os.environ.get("DIGITAL_TWIN_PERSONAL_DATA_DIR", BASE_DATA_DIR / "personal_data")
+)
+
+if not PERSONAL_DATA_DIR.exists():
+    raise FileNotFoundError(f"Personal data directory not found at {PERSONAL_DATA_DIR}")
 
 
 # ============================================================================

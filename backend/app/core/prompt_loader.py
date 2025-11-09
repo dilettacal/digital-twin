@@ -1,4 +1,5 @@
 """Prompt loading and caching utilities."""
+import os
 import json
 from pathlib import Path
 from typing import Dict, List, Any
@@ -17,7 +18,11 @@ def _log_cache_miss(loader_name: str, path: Path) -> None:
 
 
 # Get the prompts directory path (backend/data/prompts)
-PROMPTS_DIR = Path(__file__).parent.parent.parent / "data" / "prompts"
+DEFAULT_PROMPTS_DIR = Path(__file__).parent.parent.parent / "data" / "prompts"
+PROMPTS_DIR = Path(os.environ.get("DIGITAL_TWIN_PROMPTS_DIR", DEFAULT_PROMPTS_DIR))
+
+if not PROMPTS_DIR.exists():
+    raise FileNotFoundError(f"Prompts directory not found at {PROMPTS_DIR}")
 
 
 @lru_cache(maxsize=1)
