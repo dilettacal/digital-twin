@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from app.services.memory import LocalMemoryService, S3MemoryService
 from app.services.memory.utils import get_memory_path, safe_join, sanitize_session_id
