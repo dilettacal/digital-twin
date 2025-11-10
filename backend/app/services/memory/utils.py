@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from werkzeug.utils import secure_filename
 
 _SESSION_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
@@ -18,9 +19,13 @@ def sanitize_session_id(session_id: str) -> str:
 
 
 def get_memory_path(session_id: str) -> str:
-    """Return the storage path for a session."""
+    """Return the storage path for a session (guaranteed safe basename)."""
     safe_session_id = sanitize_session_id(session_id)
-    return f"{safe_session_id}.json"
+    filename = secure_filename(f"{safe_session_id}.json")
+    if filename != f"{safe_session_id}.json":
+        # Defensive: refuse if secure_filename mangles output (should never happen!)
+        raise ValueError("Session ID results in unsafe filename.")
+    return filename
 
 
 def safe_join(base_dir: str, filename: str) -> Path:

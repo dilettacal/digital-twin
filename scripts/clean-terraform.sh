@@ -18,6 +18,7 @@ fi
 
 if ls terraform.tfstate* 1> /dev/null 2>&1; then
     echo "  Removing terraform.tfstate files..."
+    rm -rf terraform.tfstate.d
     rm -f terraform.tfstate*
 fi
 

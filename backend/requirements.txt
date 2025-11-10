@@ -12,3 +12,4 @@ pyjwt
 cryptography
 requests
 structlog
+werkzeug
