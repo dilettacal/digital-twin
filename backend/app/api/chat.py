@@ -141,11 +141,11 @@ async def chat(request: ChatRequest, http_request: Request):
                 return
             except ValueError as exc:
                 logger.warning("chat_validation_error_stream", error=str(exc))
-                yield _format_sse("error", {"status_code": 400, "detail": str(exc)})
+                yield _format_sse("error", {"status_code": 400, "detail": "A validation error occurred."})
                 return
             except Exception as exc:  # noqa: BLE001
                 logger.exception("chat_unexpected_error_stream", error=str(exc))
-                yield _format_sse("error", {"status_code": 500, "detail": str(exc)})
+                yield _format_sse("error", {"status_code": 500, "detail": "An internal server error occurred."})
                 return
             finally:
                 clear_contextvars()
