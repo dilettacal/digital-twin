@@ -15,6 +15,110 @@ The application consists of:
 
 When someone asks a question, the AI references your personal data to craft responses that sound like you and contain accurate information about you.
 
+## Architecture
+
+The Digital Twin uses a modern architecture with multiple AI providers and flexible deployment options:
+
+```mermaid
+graph LR
+    %% User Interface Layer
+    subgraph "Frontend"
+        UI[Chat Interface<br/>Next.js]
+    end
+
+    %% Infrastructure Layer (Cloud or Local)
+    subgraph "Infrastructure"
+        subgraph "Cloud (AWS)"
+            CF[CloudFront CDN]
+            APIGW[API Gateway]
+            LAMBDA[AWS Lambda]
+        end
+
+        subgraph "Local Dev"
+            LOCAL[FastAPI Server<br/>localhost:8000]
+        end
+    end
+
+    %% Backend Application
+    subgraph "FastAPI Backend"
+        APP[Digital Twin API]
+        CHAT[Chat Endpoint]
+        %% RATE[Rate Limiter]
+    end
+
+    %% AI Services
+    subgraph "AI Providers"
+        BEDROCK[AWS Bedrock]
+        OPENAI[OpenAI]
+    end
+
+    %% Data Storage (Flexible)
+    subgraph "Data Storage"
+        subgraph "Cloud Storage"
+            S3D[S3 Personal Data]
+            S3M[S3 Memory]
+        end
+
+        subgraph "Local Storage"
+            FILES[Local Files<br/>backend/data/]
+            MEMORY[Local Memory<br/>../history/]
+        end
+    end
+
+    %% External Services
+    subgraph "External APIs"
+        AIAPIS[AI Provider APIs]
+    end
+
+    %% Connections - Cloud Path
+    UI -.->|Cloud| CF
+    CF --> APIGW
+    APIGW --> LAMBDA
+    LAMBDA --> APP
+
+    %% Connections - Local Path
+    UI -.->|Local| LOCAL
+    LOCAL --> APP
+
+    %% Common Backend Flow
+    APP --> CHAT
+    %% CHAT --> RATE
+    CHAT --> BEDROCK
+    CHAT --> OPENAI
+    BEDROCK --> AIAPIS
+    OPENAI --> AIAPIS
+
+    %% Data Connections (Cloud)
+    CHAT -.->|Cloud| S3D
+    CHAT -.->|Cloud| S3M
+
+    %% Data Connections (Local)
+    CHAT -.->|Local| FILES
+    CHAT -.->|Local| MEMORY
+
+    %% Styling for dark backgrounds
+    classDef frontend fill:#00bcd4,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef aws fill:#ff6f00,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef ai fill:#4caf50,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef backend fill:#2196f3,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef storage fill:#9c27b0,stroke:#ffffff,stroke-width:2px,color:#ffffff
+
+    class UI frontend
+    class CF,APIGW,LAMBDA,S3D,S3M aws
+    class LOCAL,FILES,MEMORY storage
+    class BEDROCK,OPENAI,AIAPIS ai
+    class APP,CHAT backend
+```
+
+**Key Features:**
+- **Flexible deployment** - Cloud (AWS serverless) or Local development
+- **Real-time responses** from AI providers
+- **Multi-AI provider** support (AWS Bedrock, OpenAI)
+- **Adaptive data storage** - S3 for cloud, local files for development
+- **Security controls** and validation
+
+📖 For detailed architecture information and deployment guide, see **[Architecture & Deployment](docs/ARCHITECTURE.md)**.
+
 ## Data Management
 
 ### Current Setup (Separate Private Repo)
@@ -121,9 +225,9 @@ Frontend runs on `http://localhost:3000`
 
 ## Cloud Deployment
 
-⚠️ **Cost Warning**: Deploying to AWS will incur cloud infrastructure costs that are your responsibility. See the **[Cost Disclaimer](docs/DEPLOYMENT.md#️-cost-disclaimer)** section in the deployment guide for details.
+⚠️ **Cost Warning**: Deploying to AWS will incur cloud infrastructure costs that are your responsibility. See the **[Cost Disclaimer](docs/ARCHITECTURE.md#cloud-deployment-guide)** section in the architecture guide for details.
 
-Willing to deploy to AWS? See the **[Cloud Deployment Guide](docs/DEPLOYMENT.md)** for instructions. Once setup:
+Willing to deploy to AWS? See the **[Architecture & Deployment Guide](docs/ARCHITECTURE.md)** for instructions. Once setup:
 
 **Quick deploy:**
 ```bash
