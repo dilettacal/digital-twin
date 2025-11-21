@@ -112,7 +112,7 @@ def mock_bedrock_response(monkeypatch):
             def __iter__(self_inner):
                 yield {
                     "contentBlockDelta": {
-                        "delta": [{"text": "Test response from assistant"}]
+                        "delta": {"text": "Test response from assistant"}
                     }
                 }
                 yield {"messageStop": {}}

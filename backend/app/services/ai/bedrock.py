@@ -114,45 +114,10 @@ class BedrockAIService(AIService):
             raise HTTPException(status_code=500, detail="Bedrock streaming response missing stream iterator.")
 
         for event in stream:
-            content_delta = []
-
             if "contentBlockDelta" in event:
-                delta = event["contentBlockDelta"].get("delta", [])
-                for block in delta:
-                    # Handle both dict and string formats
-                    if isinstance(block, dict):
-                        text = block.get("text")
-                        if text:
-                            content_delta.append(text)
-                    elif isinstance(block, str):
-                        # Sometimes delta contains strings directly
-                        content_delta.append(block)
-            elif "contentBlock" in event:
-                block = event["contentBlock"].get("content", [])
-                for item in block:
-                    # Handle both dict and string formats
-                    if isinstance(item, dict):
-                        text = item.get("text")
-                        if text:
-                            content_delta.append(text)
-                    elif isinstance(item, str):
-                        # Sometimes content contains strings directly
-                        content_delta.append(item)
-            elif "message" in event:
-                # Full message fallback
-                content = (
-                    event["message"]
-                    .get("content", [{"text": ""}])[0]
-                    .get("text", "")
-                )
-                if content:
-                    content_delta.append(content)
-
-            if not content_delta:
-                continue
-
-            chunk = "".join(content_delta)
-            total_length += len(chunk)
-            yield chunk
+                text = event["contentBlockDelta"]["delta"]["text"]
+                if text:
+                    total_length += len(text)
+                    yield text
 
         self._logger.info("ai_stream_completed", response_length=total_length)
