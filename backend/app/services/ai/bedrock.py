@@ -119,15 +119,25 @@ class BedrockAIService(AIService):
             if "contentBlockDelta" in event:
                 delta = event["contentBlockDelta"].get("delta", [])
                 for block in delta:
-                    text = block.get("text")
-                    if text:
-                        content_delta.append(text)
+                    # Handle both dict and string formats
+                    if isinstance(block, dict):
+                        text = block.get("text")
+                        if text:
+                            content_delta.append(text)
+                    elif isinstance(block, str):
+                        # Sometimes delta contains strings directly
+                        content_delta.append(block)
             elif "contentBlock" in event:
                 block = event["contentBlock"].get("content", [])
                 for item in block:
-                    text = item.get("text")
-                    if text:
-                        content_delta.append(text)
+                    # Handle both dict and string formats
+                    if isinstance(item, dict):
+                        text = item.get("text")
+                        if text:
+                            content_delta.append(text)
+                    elif isinstance(item, str):
+                        # Sometimes content contains strings directly
+                        content_delta.append(item)
             elif "message" in event:
                 # Full message fallback
                 content = (
